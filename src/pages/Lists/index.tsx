@@ -23,28 +23,28 @@ const Lists: React.FC = () => {
   }, [setLists])
 
   return (
-    <SafeAreaView 
-      style={ styles.container }
-    >
-      <Header title={'My Shopping Lists ' + lists.length} icon='plus'/>
-      <Search title='Mercado'/>
-      <View style={ styles.containerContent }>
-        <FlatList 
-          data={lists}
-          keyExtractor={item => item.id}
-          renderItem={({ item }) => (
-            <Card 
-              title={item.name}
-              height={100}
-              isShared={item.isShared}
-              option1={`${item.quantityProducts} Products`}
-              option2= {`Total: R$ ${item.total}`}
-              footerStyle={{ fontSize: 15, fontWeight: 'bold' }}
-            />
-          )}
-        />
-      </View>
-    </SafeAreaView>
+    <View style={{ flex: 1 }}>
+      <Header title={'My Shopping Lists'} icon='plus'/>
+      <SafeAreaView style={ styles.container }>
+        <Search title='Mercado'/>
+        <View style={ styles.containerContent }>
+          <FlatList 
+            data={lists}
+            keyExtractor={item => item.id}
+            renderItem={({ item }) => (
+              <Card 
+                title={item.name}
+                height={100}
+                isShared={item.isShared}
+                option1={`${item.quantityProducts} Products`}
+                option2= {`Total: R$ ${item.total}`}
+                footerStyle={{ fontSize: 15, fontWeight: 'bold' }}
+              />
+            )}
+          />
+        </View>
+      </SafeAreaView>
+    </View>
   )
 }
 
