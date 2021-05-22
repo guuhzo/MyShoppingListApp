@@ -1,42 +1,70 @@
 import React from 'react'
-import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native'
+import { useCallback } from 'react'
+import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
+import SkeletonContent from 'react-native-skeleton-content'
 import Icon from 'react-native-vector-icons/Feather'
 
 interface IProps {
-  height: number;
-  title: string;
   isShared: boolean;
-  option1?: string;
-  option2?: string;
-  footerStyle?: {
-    fontSize?: number;
-    fontWeight?: "bold" | "500" ;
+  header: {
+    fields:{
+      title: string
+    },
+    style?: {
+      fontSize?: number;
+      fontWeight?: "bold" | "500";
+    }
+  }
+  footer?: {
+    fields: {
+      quantity: number;
+      total: number
+    },
+    style: {
+      fontSize?: number;
+    }
   };
 }
 
-const Card: React.FC<IProps> = ({ height, title, isShared, option1, option2, footerStyle }) => {
-  
+const Card: React.FC<IProps> = ({ header, isShared, footer }) => {
+
+  const formatCurrency = useCallback((value: number) => {
+    const formattedValue = Number(value).toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+      maximumFractionDigits: 2,
+
+    })
+    return formattedValue
+  }, [])
+
   return (
     <TouchableOpacity>
-      <View style={{ ...styles.container, height: height }}>
-        <View style={ styles.header }>
-          <Text style={ styles.title }>{title}</Text>
-          <Icon name={isShared ? 'users' : 'user'} size={15} color='#B7B7CC'/>
+      <View style={{ height: footer ? 104 : 40, ...styles.container }}>
+          <View style={styles.header}>
+            <Text style={{ ...styles.title, ...header.style }}>{header.fields.title}</Text>
+            <Icon name={isShared ? 'users' : 'user'} size={16} color='#B7B7CC' />
+          </View>
+          {
+            footer &&
+            <View style={styles.footer}>
+              <Text style={footer.style}>{`${footer.fields.quantity} Products`}</Text>
+              <Text style={footer.style}>{`Total ${formatCurrency(footer.fields.total)}`}</Text>
+            </View>
+          }
         </View>
-        <View style={ styles.footer }>
-          <Text style={footerStyle}>{option1}</Text>
-          <Text style={footerStyle}>{option2}</Text>
-        </View>
-      </View>
+
+
     </TouchableOpacity>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex:1,
     justifyContent: 'space-between',
     backgroundColor: '#F0F0F5',
-    marginHorizontal: 30,
+    marginHorizontal: 32,
     marginBottom: 10,
     borderRadius: 8,
     paddingVertical: 10
@@ -45,18 +73,42 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginLeft: 30,
-    marginRight: 15,
+    marginLeft: 24,
+    marginRight: 16,
   },
   title: {
-    fontSize: 18,
+    fontSize: 24,
     fontWeight: 'bold'
   },
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginHorizontal: 30
+    marginHorizontal: 24
   },
 })
 
 export default Card;
+
+ {/* 
+  <SkeletonContent 
+    isLoading={false}
+    animationDirection='horizontalRight'
+    layout={[
+      { width: 100, height: 20 },
+      { width: 16, height: 16 }
+    ]}
+    containerStyle={ styles.header }
+  >
+    <Text style={styles.title}>{title}</Text>
+    <Icon name={isShared ? 'users' : 'user'} size={20} color='#B7B7CC' />
+  </SkeletonContent>
+  <SkeletonContent
+    isLoading={true}
+    animationDirection='horizontalRight'
+    layout={[
+      { width: 100, height: 16 },
+      { width: 100, height: 16 },
+    ]}
+    containerStyle={ styles.footer }
+  />   
+*/}

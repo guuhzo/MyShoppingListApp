@@ -1,50 +1,114 @@
-import React, { useState, useEffect } from 'react'
-import { StyleSheet, View, SafeAreaView, FlatList } from 'react-native'
+import React, { useState, useEffect, useCallback } from 'react'
+import { 
+  StyleSheet, 
+  View, 
+  SafeAreaView, 
+  FlatList, 
+  TouchableWithoutFeedback, 
+  Keyboard,
+  RefreshControl
+} from 'react-native'
+import axios from 'axios'
 
 import Header from '../../components/Header'
 import Search from '../../components/Search'
 import Card from '../../components/Card'
+import NoItems from '../../components/NoItems'
+import ListSkeleton from './Skeleton'
 
-import importedlists from '../../../tmp/lists'
+import api from '../../services/api'
+
 
 interface IList {
   id: string;
   name: string;
   isShared: boolean;
-  quantityProducts: number;
+  products: [];
   total: number;
 }
 
 const Lists: React.FC = () => {
+  const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
   const [lists, setLists] = useState([] as IList[])
+  
+  const loadingLists = useCallback(async () => {
+    setLoading(true)
 
+    try {
+      const response = await api.get<IList[]>('lists')
+      setLists(response.data)
+    } catch (e) {
+      setLists([])
+    }
+
+    setLoading(false)
+  }, [])
+
+  
   useEffect(() => {
-    setLists(importedlists)
-  }, [setLists])
+    loadingLists()
+  }, [])
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true)
+
+    loadingLists()
+
+    setRefreshing(false)
+  }, [])
 
   return (
-    <View style={{ flex: 1 }}>
-      <Header title={'My Shopping Lists'} icon='plus'/>
-      <SafeAreaView style={ styles.container }>
-        <Search title='Mercado'/>
-        <View style={ styles.containerContent }>
-          <FlatList 
-            data={lists}
-            keyExtractor={item => item.id}
-            renderItem={({ item }) => (
-              <Card 
-                title={item.name}
-                height={100}
-                isShared={item.isShared}
-                option1={`${item.quantityProducts} Products`}
-                option2= {`Total: R$ ${item.total}`}
-                footerStyle={{ fontSize: 15, fontWeight: 'bold' }}
-              />
-            )}
-          />
-        </View>
-      </SafeAreaView>
-    </View>
+    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <View style={{ flex: 1 }}>
+        <Header title={'My Shopping Lists'} icon='plus'/>
+        <SafeAreaView style={ styles.container }>
+          <Search title='Mercado'/>
+          <View style={ styles.containerContent }>
+            {
+              loading
+              ?
+                <ListSkeleton />
+              :
+                <FlatList 
+                  data={lists}
+                  keyExtractor={item => item.id}
+                  renderItem={({ item }) => (
+                    <Card
+                      isShared={item.isShared}
+                      header={{
+                        fields: {
+                          title: item.name
+                        }
+                      }}
+                      footer={{
+                        fields: {
+                          quantity: item.products.length,
+                          total: item.total
+                        },
+                        style: {
+                          fontSize: 16
+                        }
+                      }}
+                    />
+                  )}
+                  ListEmptyComponent={<NoItems />}
+                  contentContainerStyle={lists.length === 0 && { flex: 1 }}
+                  refreshControl={
+                    <RefreshControl 
+                      refreshing={refreshing}
+                      onRefresh={onRefresh}
+                      colors={[
+                        '#3272BC'
+                      ]}
+                    />
+                  }
+                />
+            }
+          </View>
+        </SafeAreaView>
+      </View>
+    </TouchableWithoutFeedback>
   )
 }
 
@@ -55,22 +119,11 @@ const styles = StyleSheet.create({
   },
   containerContent: {
     flex: 1,
-    marginTop: 20
+    marginTop: 20,
     
   },
-  listItem: {
-    height: 100,
-    backgroundColor: '#F0F0F5',
-    marginHorizontal: 30,
-    marginBottom: 10,
-    borderRadius: 8,
-  },
-  listItemHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginLeft: 30,
-    marginRight: 15,
-    marginTop: 10
+  containerEmptyList: {
+    flex: 1,
   },
   text: {
     color: '#000',

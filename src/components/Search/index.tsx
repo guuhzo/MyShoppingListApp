@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { View, TextInput, StyleSheet } from 'react-native'
+import React, { useState, useRef, useEffect } from 'react'
+import { View, TextInput, StyleSheet, TextInputProps, TouchableWithoutFeedback } from 'react-native'
 import Icon from 'react-native-vector-icons/Feather'
 
 interface IProps {
@@ -8,19 +8,24 @@ interface IProps {
 
 const Search: React.FC<IProps> = ({ title }) => {
   const [isFocused, setIsFocused] = useState(false)
+  const inputRef = useRef<TextInput>(null)
 
+ 
 
   return (
-    <View style={ styles.container }>
-      <Icon name='search' size={20} color={isFocused ? '#3272BC' : '#B7B7CC'}/>
-      <TextInput 
-        style={ styles.textIput }
-        placeholderTextColor='#B7B7CC'
-        placeholder={title}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
-      />
-    </View>
+    <TouchableWithoutFeedback onPress={() => inputRef.current?.focus()}>
+      <View style={ styles.container }>
+        <Icon name='search' size={20} color={isFocused ? '#3272BC' : '#B7B7CC'}/>
+        <TextInput 
+          ref={inputRef}
+          style={ styles.textIput }
+          placeholderTextColor='#B7B7CC'
+          placeholder={title}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+        />
+      </View>
+    </TouchableWithoutFeedback>
   )
 }
 

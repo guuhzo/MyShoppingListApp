@@ -62,9 +62,12 @@ const Main: React.FC = () => {
                 name='settings'
                 size={size}
                 color={color}
-              />
-            )
-          })}
+              />),
+             
+          
+            })
+          }
+          
         />
       </Tab.Navigator>
     </NavigationContainer>

@@ -1,5 +1,5 @@
 import React from 'react'
-import { View, Text, TouchableHighlight, TouchableOpacity, StyleSheet, StatusBar } from 'react-native'
+import { View, Text, TouchableOpacity, StyleSheet, StatusBar } from 'react-native'
 import Icon from 'react-native-vector-icons/Feather'
 
 interface IProps {
@@ -18,7 +18,7 @@ const Header: React.FC<IProps> = ({ title, icon }) => {
         <Text style={ styles.title }>{ title }</Text>
         <TouchableOpacity 
           activeOpacity={0.4}
-          
+
           onPress={() => console.log(`clicado ${title}`)}
         >
           <Icon name={icon} size={24} color='#efefef'/>
