@@ -4,10 +4,15 @@ import { FlatList, Keyboard, RefreshControl, SafeAreaView, ScrollView, StyleShee
 import Card from '../../components/Card'
 
 import Header from '../../components/Header'
+import NewItemModal from '../../components/NewItemModal'
 import NoItems from '../../components/NoItems'
 import Search from '../../components/Search'
 import api from '../../services/api'
 import ProductsSkeleton from './Skeleton'
+
+interface IProp {
+  setShowTabBar(value: boolean): void
+}
 
 interface IProduct {
   id: string;
@@ -16,21 +21,15 @@ interface IProduct {
   lastPrice: number;
 }
 
-const Products: React.FC = () => {
+const Products: React.FC<IProp> = ({ setShowTabBar }) => {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
+  const [showNewModal, setShowNewModal] = useState(false)
   const [products, setProducts] = useState([] as IProduct[])
   
   const loadingProducts = useCallback(async () => {
     setLoading(true)
     
-    try {
-      const response = await api.get<IProduct[]>('products')
-      setProducts(response.data)
-    } catch(e) {
-      setProducts([])
-    }
-
     setLoading(false)
   }, [])
 
@@ -48,8 +47,13 @@ const Products: React.FC = () => {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+      <>
       <View style={{ flex: 1 }}>
-        <Header title={'My Shopping Lists'} icon='plus'/>
+        <Header 
+          title={'My Shopping Lists'} 
+          icon='plus'
+          buttonPress={() => { setShowTabBar(false); setShowNewModal(true) }}
+        />
         <SafeAreaView style={ styles.container }>
           <Search title='Mercado'/>
           <View style={ styles.containerContent }>
@@ -91,6 +95,19 @@ const Products: React.FC = () => {
           </View>
         </SafeAreaView>
       </View>
+      <NewItemModal 
+          height='80%'
+          title='Create a new list'
+          type='list'
+          show={showNewModal}
+          handleAdd={({}) => console.log('salvar item na lista')} 
+          handleClose={() => { 
+            setShowNewModal(false)
+            setShowTabBar(true) 
+            Keyboard.dismiss()
+          }} 
+        />
+      </>
     </TouchableWithoutFeedback>
   )
 }

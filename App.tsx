@@ -1,11 +1,11 @@
 import React from 'react';
 import 'react-native-gesture-handler';
 
-import Main from './src/pages/Main'
+import Home from './src/pages/Home'
 
 const App = () => {
   return (
-      <Main />
+      <Home />
   );
 };
 

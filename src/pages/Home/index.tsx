@@ -1,4 +1,5 @@
 import React from 'react';
+import { useState } from 'react'
 import { NavigationContainer } from '@react-navigation/native'
 import { createBottomTabNavigator } from  '@react-navigation/bottom-tabs' 
 import Icon from 'react-native-vector-icons/Feather'
@@ -10,6 +11,7 @@ import Settings from '../Settings'
 const Tab = createBottomTabNavigator();
 
 const Main: React.FC = () => {
+  const [showTabBar, setShowTabBar] = useState(true)
 
   return (
     <NavigationContainer>
@@ -21,14 +23,14 @@ const Main: React.FC = () => {
             fontSize: 15,
             fontWeight: 'bold'
           },
-          keyboardHidesTabBar: true
+          keyboardHidesTabBar: true,
+          
         }}
         initialRouteName='Lists'
         
       >
         <Tab.Screen 
           name='Lists' 
-          component={Lists}
           options={() => ({
             tabBarIcon: ({ color, size }) => (
               <Icon 
@@ -36,13 +38,15 @@ const Main: React.FC = () => {
                 size={size} 
                 color={color}            
               />
-            ),            
+            ),
+            tabBarVisible: showTabBar
           })}
           
-        />
+        >
+          {() => <Lists setShowTabBar={setShowTabBar}/>}
+        </Tab.Screen>
         <Tab.Screen 
           name='Products' 
-          component={Products}
           options={({ route }) => ({
             tabBarIcon: ({ color, size }) => (
               <Icon 
@@ -50,9 +54,12 @@ const Main: React.FC = () => {
                 size={size}
                 color={color}
               />
-            )
+            ),
+            tabBarVisible: showTabBar
           })}
-        />
+        >
+          {() => <Products setShowTabBar={setShowTabBar}/>}
+        </Tab.Screen>
         <Tab.Screen 
           name='Settings' 
           component={Settings}

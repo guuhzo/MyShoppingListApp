@@ -5,9 +5,10 @@ import Icon from 'react-native-vector-icons/Feather'
 interface IProps {
   title: string;
   icon: string;
+  buttonPress(): void
 }
 
-const Header: React.FC<IProps> = ({ title, icon }) => {
+const Header: React.FC<IProps> = ({ title, icon, buttonPress }) => {
   return (
     <View style={ styles.container }>
       <StatusBar 
@@ -19,7 +20,7 @@ const Header: React.FC<IProps> = ({ title, icon }) => {
         <TouchableOpacity 
           activeOpacity={0.4}
 
-          onPress={() => console.log(`clicado ${title}`)}
+          onPress={buttonPress}
         >
           <Icon name={icon} size={24} color='#efefef'/>
         </TouchableOpacity>
