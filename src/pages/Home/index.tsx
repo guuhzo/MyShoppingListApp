@@ -47,7 +47,7 @@ const Main: React.FC = () => {
         </Tab.Screen>
         <Tab.Screen 
           name='Products' 
-          options={({ route }) => ({
+          options={() => ({
             tabBarIcon: ({ color, size }) => (
               <Icon 
                 name='shopping-bag'
