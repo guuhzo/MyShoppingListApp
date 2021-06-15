@@ -2,13 +2,26 @@ import Realm from 'realm'
 
 import {
   ProductSchema,
-  ListSchema
+  ListSchema,
+  PaymentMethodSchema
 } from '../database/Schemas'
 
-export default Realm.open({
+// export default () => (
+//   Realm.open({
+//     path: 'db',
+//     schema: [
+//       ProductSchema,
+//       ListSchema
+//     ],
+//     schemaVersion: 6
+//   })
+// )
+export default new Realm({
   path: 'db',
   schema: [
     ProductSchema,
-    ListSchema
-  ]
+    ListSchema,
+    PaymentMethodSchema
+  ],
+  schemaVersion: 7
 })

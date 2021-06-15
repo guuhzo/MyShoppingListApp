@@ -1,24 +1,32 @@
 import React, { useEffect, useState } from 'react'
 import { useCallback } from 'react'
-import { FlatList, Keyboard, RefreshControl, SafeAreaView, ScrollView, StyleSheet, Text, TouchableWithoutFeedback, View } from 'react-native'
-import Card from '../../components/Card'
+import { 
+  FlatList, 
+  Keyboard, 
+  RefreshControl, 
+  SafeAreaView, 
+  StyleSheet, 
+  TouchableWithoutFeedback, 
+  View 
+} from 'react-native'
 
+import Card from '../../components/Card'
 import Header from '../../components/Header'
-import NewItemModal from '../../components/NewItemModal'
+import NewItemModal from './Components/NewItemModal'
 import NoItems from '../../components/NoItems'
 import Search from '../../components/Search'
-import api from '../../services/api'
-import ProductsSkeleton from './Skeleton'
+import ProductsSkeleton from './Components/Skeleton'
+import Realm from '../../services/database'
 
 interface IProp {
   setShowTabBar(value: boolean): void
 }
 
 interface IProduct {
-  id: string;
+  _id: string;
   name: string;
-  isShared: boolean;
   lastPrice: number;
+  createdAt: Date;
 }
 
 const Products: React.FC<IProp> = ({ setShowTabBar }) => {
@@ -30,10 +38,20 @@ const Products: React.FC<IProp> = ({ setShowTabBar }) => {
   const loadingProducts = useCallback(async () => {
     setLoading(true)
     
+    const realm =  Realm
+    const data = realm.objects<IProduct[]>('Product')
+
+    setProducts(data as any)
     setLoading(false)
   }, [])
 
   useEffect(() => {
+    const realm = Realm
+    realm.addListener('change', (realm) => {
+      const data = realm.objects<IProduct[]>('Product')
+      setProducts(data as any)
+    })
+
     loadingProducts()
   }, [])
 
@@ -55,7 +73,7 @@ const Products: React.FC<IProp> = ({ setShowTabBar }) => {
           buttonPress={() => { setShowTabBar(false); setShowNewModal(true) }}
         />
         <SafeAreaView style={ styles.container }>
-          <Search title='Mercado'/>
+          <Search title='Mercado' marginTop={-25}/>
           <View style={ styles.containerContent }>
             {
               loading
@@ -64,17 +82,15 @@ const Products: React.FC<IProp> = ({ setShowTabBar }) => {
               :
                 <FlatList 
                   data={products}
-                  keyExtractor={item => item.id}
+                  keyExtractor={item => item._id}
                   renderItem={({ item }) => (
                     <Card
-                      isShared={item.isShared}
                       header={{
                         fields: {
                           title: item.name
                         },
                         style: {
-                          fontSize: 16,
-                          fontWeight: 'bold'
+                          fontSize: 16
                         }
                       }}
                     />
@@ -96,9 +112,6 @@ const Products: React.FC<IProp> = ({ setShowTabBar }) => {
         </SafeAreaView>
       </View>
       <NewItemModal 
-          height='80%'
-          title='Create a new list'
-          type='list'
           show={showNewModal}
           handleAdd={({}) => console.log('salvar item na lista')} 
           handleClose={() => { 

@@ -1,55 +1,105 @@
 import React, { useCallback, useState } from 'react'
+import { useEffect } from 'react'
+import { Alert } from 'react-native'
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native'
 
 import Header from '../../components/Header'
 import api from '../../services/api'
+import getRealm from '../../services/database'
 
 interface IList {
-  id: string;
+  _id: string;
   name: string;
-  isShared: boolean;
-  products: [];
+  isFinished: boolean;
+  products: IProduct[];
   total: number;
+  createdAt: Date;
 }
 
 interface IProduct {
-  id: string;
+  _id: string;
   name: string;
-  isShared: boolean;
   lastPrice: number;
+  createdAt: Date;
 }
 
 
 const Settings: React.FC = () => {
-  const [bText, setBText] = useState('Sync Information')
+  const [realm, setRealm] = useState(getRealm)
+  const [bSyncText, setBSyncText] = useState('Sync Information')
+  const [bDeleteText, setBDeleteText] = useState('Delete Data')
 
   const handleSync = useCallback(async () => {
-    setBText('Synchronizing');
-        
+    setBSyncText('Synchronizing');
+
     try {
-      const response = await api.get<IList[]>('lists')
-      // setLists(response.data)
+      const responseList = await api.get<IList[]>('lists')
+      
+      realm.write(() => {
+        responseList.data.forEach(item => {
+          realm.create('List', {
+            _id: item._id,
+            name: item.name,
+            products: item.products,
+            createdAt: new Date(item.createdAt),
+            isFinished: item.isFinished
+          })
+        })
+      })
+      const responseProduct = await api.get<IProduct[]>('products')
+      
+      realm.write(() => {
+        responseProduct.data.forEach(item => {
+          realm.create('Product', {
+            _id: item._id,
+            name: item.name,
+            lastPrice: Number(item.lastPrice),
+            createdAt: new Date(item.createdAt)
+          })
+        })
+      })
     } catch (e) {
-      // setLists([])
+      Alert.alert(
+        'Ops!',
+        'Erro ao carregar',
+        [ { text: 'Ok' } ]
+      )
+      console.log(e);
+      
     }
 
-    try {
-      const response = await api.get<IProduct[]>('products')
-      // setProducts(response.data)
-    } catch(e) {
-      // setProducts([])
-    }
+    setBSyncText('Sync Information');
+  }, [])
 
-    setBText('Sync Information');
+  const handleDelete = useCallback(async () => {
+    setBDeleteText('Deleting')
+
+    realm.write(() => {
+      const lists = realm.objects('List')
+      realm.delete(lists)
+      
+      const products = realm.objects('Product')
+      realm.delete(products)
+    })
+    
+    setBDeleteText('Delete Data')
+  }, [])
+
+  useEffect(() => {
   }, [])
   
   return (
     <View style={ styles.container }>
-      <Header title='My Settings' icon='log-out'/>
+      <Header title='My Settings' icon='log-out' buttonPress={() => {}}/>
       <View style={ styles.containerContent }>
         <TouchableOpacity onPress={handleSync}>
           <View style={ styles.button }>
-            <Text style={ styles.text }>{bText}</Text>
+            <Text style={ styles.text }>{bSyncText}</Text>
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleDelete}>
+          <View style={[ styles.button, { marginTop: 8 } ]}>
+            <Text style={ styles.text }>{bDeleteText}</Text>
           </View>
         </TouchableOpacity>
       </View>

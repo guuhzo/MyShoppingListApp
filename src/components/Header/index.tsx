@@ -1,50 +1,66 @@
-import React from 'react'
-import { View, Text, TouchableOpacity, StyleSheet, StatusBar } from 'react-native'
+import React, { useState } from 'react'
+import {
+  TouchableOpacity,
+  StatusBar,
+  View
+} from 'react-native'
 import Icon from 'react-native-vector-icons/Feather'
+import { useNavigation } from '@react-navigation/native'
+
+import { Container, Content, Title, Subtitle } from './styles'
+import theme from '../../global/theme'
 
 interface IProps {
+  hasReturn?: boolean;
   title: string;
   icon: string;
   buttonPress(): void
 }
 
-const Header: React.FC<IProps> = ({ title, icon, buttonPress }) => {
+const Header: React.FC<IProps> = ({ 
+  hasReturn, title: titleProp, icon, buttonPress, children 
+}) => {
+  const [title, setTitle] = useState(() => {
+    if (titleProp.length > 18) {
+      return titleProp.substr(0, 18) + '...'
+    } else {
+      return titleProp
+    }
+  })
+  const navigation = useNavigation()
+  
   return (
-    <View style={ styles.container }>
-      <StatusBar 
+    <Container>
+      <StatusBar
         animated={true}
-        backgroundColor='#3272BC'
+        backgroundColor={theme.colors.primary}
       />
-      <View style={ styles.content }>
-        <Text style={ styles.title }>{ title }</Text>
-        <TouchableOpacity 
+      <Content>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          {/* {hasReturn &&
+            <TouchableOpacity style={{ marginRight: 12 }} onPress={navigation.goBack}>
+              <Icon 
+                name='arrow-left' 
+                size={24} 
+                color={theme.colors.altText
+              }/>
+            </TouchableOpacity> 
+          } */}
+          <Title>{title}</Title>
+        </View>
+        <TouchableOpacity
           activeOpacity={0.4}
 
           onPress={buttonPress}
         >
-          <Icon name={icon} size={24} color='#efefef'/>
+          <Icon name={icon} size={24} color={theme.colors.altText} />
         </TouchableOpacity>
-      </View>
-    </View>
+      </Content>
+      <Subtitle>
+        {children}
+      </Subtitle>
+    </Container>
   )
 }
-
-const styles = StyleSheet.create({
-  container: {
-    height: 150,
-    backgroundColor: '#3272BC'
-  },
-  content: {
-    flexDirection: 'row',
-    marginTop: 50,
-    marginHorizontal: 30,
-    justifyContent: 'space-between'
-  },
-  title: {
-    color: '#efefef',
-    fontSize: 25,
-    fontWeight: '500'
-  }
-})
 
 export default Header;

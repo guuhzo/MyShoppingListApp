@@ -1,51 +1,43 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { View, TextInput, StyleSheet, TextInputProps, TouchableWithoutFeedback } from 'react-native'
+import { TextInput as RnTextInput, TouchableWithoutFeedback } from 'react-native'
 import Icon from 'react-native-vector-icons/Feather'
+import { RFValue } from 'react-native-responsive-fontsize'
+
+import {
+  Container,
+  TextInput
+} from './styles'
+import theme from '../../global/theme'
 
 interface IProps {
   title: string;
+  marginTop: number;
 }
 
-const Search: React.FC<IProps> = ({ title }) => {
+const Search: React.FC<IProps> = ({ title, marginTop }) => {
   const [isFocused, setIsFocused] = useState(false)
-  const inputRef = useRef<TextInput>(null)
+  const inputRef = useRef<RnTextInput>(null)
 
  
 
   return (
     <TouchableWithoutFeedback onPress={() => inputRef.current?.focus()}>
-      <View style={ styles.container }>
-        <Icon name='search' size={20} color={isFocused ? '#3272BC' : '#B7B7CC'}/>
+      <Container marginTop={marginTop}>
+        <Icon 
+          name='search' 
+          size={RFValue(16)} 
+          color={isFocused ? theme.colors.primary : theme.colors.placeHolderText}/>
         <TextInput 
           ref={inputRef}
-          style={ styles.textIput }
-          placeholderTextColor='#B7B7CC'
+          placeholderTextColor={theme.colors.placeHolderText}
           placeholder={title}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
         />
-      </View>
+      </Container>
     </TouchableWithoutFeedback>
   )
 }
 
-const styles = StyleSheet.create({
-  container: {
-    alignItems: 'center',
-    flexDirection: 'row',
-    height: 60,
-    marginHorizontal: 30,
-    marginTop: -30,
-    backgroundColor: '#F0F0F5',
-    borderRadius: 8,
-    paddingHorizontal: 20    
-  }, 
-  textIput: {
-    flex: 1,
-    fontSize: 20,
-    color: '#000',
-    marginHorizontal: 10,
-  }
-})
 
 export default Search;

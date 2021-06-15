@@ -14,7 +14,6 @@ target 'MyShoppingListApp' do
     :hermes_enabled => false
   )
 
-  pod 'RNSVG', :path => '../node_modules/react-native-svg'
 
   target 'MyShoppingListAppTests' do
     inherit! :complete
@@ -27,6 +26,8 @@ target 'MyShoppingListApp' do
   # you should disable the next line.
   # use_flipper!()
   # use_flipper!({ 'Flipper-Folly' => '2.3.0' })
+
+  # pod 'React-RCTText', :path => '../node_modules/react-native/Libraries/Text', :modular_headers => true
 
   post_install do |installer|
     react_native_post_install(installer)

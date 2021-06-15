@@ -1,12 +1,15 @@
 import React from 'react';
 import { useState } from 'react'
 import { NavigationContainer } from '@react-navigation/native'
-import { createBottomTabNavigator } from  '@react-navigation/bottom-tabs' 
 import Icon from 'react-native-vector-icons/Feather'
+import { createBottomTabNavigator } from  '@react-navigation/bottom-tabs' 
+
+import theme from '../../global/theme'
 
 import Lists from '../Lists'
 import Products from '../Products'
 import Settings from '../Settings'
+
 
 const Tab = createBottomTabNavigator();
 
@@ -14,10 +17,9 @@ const Main: React.FC = () => {
   const [showTabBar, setShowTabBar] = useState(true)
 
   return (
-    <NavigationContainer>
       <Tab.Navigator
         tabBarOptions={{
-          activeTintColor: '#3272BC',
+          activeTintColor: theme.colors.primary,
           labelPosition: 'beside-icon',
           labelStyle: {
             fontSize: 15,
@@ -58,7 +60,7 @@ const Main: React.FC = () => {
             tabBarVisible: showTabBar
           })}
         >
-          {() => <Products setShowTabBar={setShowTabBar}/>}
+          {() => <Products setShowTabBar={setShowTabBar} />}
         </Tab.Screen>
         <Tab.Screen 
           name='Settings' 
@@ -69,15 +71,12 @@ const Main: React.FC = () => {
                 name='settings'
                 size={size}
                 color={color}
-              />),
-             
-          
+              />)
             })
           }
           
         />
       </Tab.Navigator>
-    </NavigationContainer>
   )
 };
 

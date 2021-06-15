@@ -1,18 +1,24 @@
 import React from 'react'
-import { useCallback } from 'react'
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native'
-import SkeletonContent from 'react-native-skeleton-content'
-import Icon from 'react-native-vector-icons/Feather'
+import { useCallback, useState } from 'react'
+import { View, Text as RNText, StyleSheet, TouchableOpacity, Platform } from 'react-native'
+import { RFValue } from 'react-native-responsive-fontsize'
+import theme from '../../global/theme'
+
+import {
+  Container,
+  Header,
+  Title,
+  Footer,
+  Text
+} from './styles'
 
 interface IProps {
-  isShared: boolean;
   header: {
-    fields:{
+    fields: {
       title: string
     },
     style?: {
       fontSize?: number;
-      fontWeight?: "bold" | "500";
     }
   }
   footer?: {
@@ -26,7 +32,15 @@ interface IProps {
   };
 }
 
-const Card: React.FC<IProps> = ({ header, isShared, footer }) => {
+const Card: React.FC<IProps> = ({ header, footer }) => {
+  const [title, setTitle] = useState(() => {
+    if (header.fields.title.length > 18) {
+      return header.fields.title.substr(0, 18) + '...'
+    } else {
+      return header.fields.title
+    }
+  })
+  const [hasFooter, setHasFooter] = useState<boolean>(footer ? true : false)
 
   const formatCurrency = useCallback((value: number) => {
     const formattedValue = Number(value).toLocaleString('pt-BR', {
@@ -40,17 +54,19 @@ const Card: React.FC<IProps> = ({ header, isShared, footer }) => {
 
   return (
     <TouchableOpacity>
-      <View style={{ height: footer ? 104 : 40, ...styles.container }}>
-          <View style={styles.header}>
-            <Text style={{ ...styles.title, ...header.style }}>{header.fields.title}</Text>
-            <Icon name={isShared ? 'users' : 'user'} size={16} color='#B7B7CC' />
-          </View>
+        <View style={[ styles.container, { height: hasFooter ? RFValue(104) : RFValue(40)}]}>
+          <Header>
+            <Title
+            >{title}</Title>
+          </Header>
           {
             footer &&
-            <View style={styles.footer}>
-              <Text style={footer.style}>{`${footer.fields.quantity} Products`}</Text>
-              <Text style={footer.style}>{`Total ${formatCurrency(footer.fields.total)}`}</Text>
-            </View>
+            <Footer>
+              <Text
+              >{`${footer.fields.quantity} Products`}</Text>
+              <Text
+              >{`Total ${formatCurrency(footer.fields.total)}`}</Text>
+            </Footer>
           }
         </View>
 
@@ -61,54 +77,16 @@ const Card: React.FC<IProps> = ({ header, isShared, footer }) => {
 
 const styles = StyleSheet.create({
   container: {
-    flex:1,
+    flex: 1,
     justifyContent: 'space-between',
-    backgroundColor: '#F0F0F5',
-    marginHorizontal: 32,
-    marginBottom: 10,
-    borderRadius: 8,
-    paddingVertical: 10
-  },
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginLeft: 24,
-    marginRight: 16,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: 'bold'
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginHorizontal: 24
-  },
+    backgroundColor: theme.colors.container,
+    marginLeft: RFValue(32),
+    marginRight: RFValue(32),
+    marginBottom: RFValue(10),
+    borderRadius: RFValue(8),
+    paddingTop: RFValue(10),
+    paddingBottom: RFValue(10),
+  }
 })
 
-export default Card;
-
- {/* 
-  <SkeletonContent 
-    isLoading={false}
-    animationDirection='horizontalRight'
-    layout={[
-      { width: 100, height: 20 },
-      { width: 16, height: 16 }
-    ]}
-    containerStyle={ styles.header }
-  >
-    <Text style={styles.title}>{title}</Text>
-    <Icon name={isShared ? 'users' : 'user'} size={20} color='#B7B7CC' />
-  </SkeletonContent>
-  <SkeletonContent
-    isLoading={true}
-    animationDirection='horizontalRight'
-    layout={[
-      { width: 100, height: 16 },
-      { width: 100, height: 16 },
-    ]}
-    containerStyle={ styles.footer }
-  />   
-*/}
+export default Card
