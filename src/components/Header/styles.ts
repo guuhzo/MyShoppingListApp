@@ -3,26 +3,24 @@ import { RFValue } from  'react-native-responsive-fontsize'
 import styled from 'styled-components/native'
 
 export const Container = styled.View`
-  height: ${RFValue(100 + getStatusBarHeight(true))}px;
+  height: ${RFValue(50 + getStatusBarHeight(true))}px;
   background-color: ${({theme}) => theme.colors.primary};
-  justify-content: space-between;
 `
 export const Content = styled.View`
   flex-direction: row;
+  flex: 1;
   justify-content: space-between;
   align-items: center;
-  margin-top: ${RFValue(getStatusBarHeight(true) + 20)}px;
-  margin-left: ${RFValue(30)}px;
-  margin-right: ${RFValue(30)}px;
+  margin-left: ${RFValue(20)}px;
+  margin-right: ${RFValue(20)}px;
 `
 export const Title = styled.Text`
   color: ${({theme}) => theme.colors.altText};
-  font-size: ${RFValue(24)}px;
+  font-size: ${RFValue(20)}px;
   font-weight: 500;
 `
 
-export const Subtitle = styled.View`
-  margin-left: ${RFValue(30)}px;
-  margin-right: ${RFValue(30)}px;
-  margin-bottom: ${RFValue(8)}px;
+export const Options = styled.View`
+  flex-direction: row;
+  margin-left: ${RFValue(16)}px;  
 `

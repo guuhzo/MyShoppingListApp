@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import theme from '../../global/theme'
-
+import { StackScreenProps } from '@react-navigation/stack'
 import {
   StyleSheet,
   View,
@@ -8,78 +8,64 @@ import {
   FlatList,
   TouchableWithoutFeedback,
   Keyboard,
-  RefreshControl,
-  Text
 } from 'react-native'
 
+import { 
+  FloatActionButton 
+} from './styles'
+
+
 import Header from '../../components/Header'
-import Search from '../../components/Search'
 import Card from '../../components/Card'
 import NoItems from '../../components/NoItems'
-import NewItemModal from './Components/NewItemModal'
 import ListSkeleton from './Components/Skeleton'
 
-import Realm from '../../services/database'
+import { StackParamList } from '../../routes' 
+import Icon from 'react-native-vector-icons/Feather'
+import { RFValue } from 'react-native-responsive-fontsize'
+import database from '../../database'
+import List from '../../database/model/List'
+import ProductList from '../../database/model/ProductList'
 
-interface IProp {
-  setShowTabBar(value: boolean): void
-}
-
-interface IProduct {
-  _id: string;
-  name: string;
-  isShared: boolean;
-  lastPrice: number;
-}
-
-interface IBudget {
-  _id: string;
-  type: string;
-  value: number;
-}
+type Props = StackScreenProps<StackParamList, 'Lists'>
 
 interface IList {
-  _id: string;
+  id: string;
   name: string;
-  isFinished: boolean;
-  products: IProduct[];
-  budget: IBudget[];
-  createdAt: Date;
+  cash: number;
+  card: number;
+  done: boolean;
+  quantity: number;
 }
 
-const Lists: React.FC<IProp> = ({ setShowTabBar }) => {
+const Lists: React.FC<Props> = ({ navigation }) => {
   const [loading, setLoading] = useState(true)
-  const [realm, setRealm] = useState(Realm)
 
-  const [refresh, setRefresh] = useState(false)
-  const [showNewModal, setShowNewModal] = useState(false)
   const [lists, setLists] = useState([] as IList[])
 
-  const loadingLists = useCallback(() => {
-    // const realm =  Realm
+  const loadingLists = useCallback(async () => {
     setLoading(true)
-    const data = realm.objects<IList[]>('List')
-    const newLists: IList[] = data.map(item => item) as any
-    setLists(newLists)
 
-    setRefresh(!refresh)
+    const listsCollection = database.get<List>('lists')
+    const dbLists = await listsCollection.query().fetch()
+   
+    setLists(dbLists)
+
+
     setLoading(false)
-  }, [lists, refresh])
+  }, [lists])
 
 
   useEffect(() => {
-    realm.addListener('change', (realm, change) => {
-      loadingLists()
-    })
     loadingLists()
-
-    return () => {
-      Realm.removeAllListeners('change')
-    }
   }, [])
 
-  const renderItem = ({ item }: { item: IList}) => (
-    <View key={item._id}>
+  const handleCreate = useCallback(() => {
+    navigation.navigate('CreateList')
+  },[])
+
+  const renderItem = ({ item }: { item: IList }) => (
+    <View key={item.id}>
       <Card
         header={{
           fields: {
@@ -88,10 +74,8 @@ const Lists: React.FC<IProp> = ({ setShowTabBar }) => {
         }}
         footer={{
           fields: {
-            quantity: item.products.length,
-            total: item.budget.reduce((acumulator, current) => {
-              return acumulator += current.value
-            }, 0)
+            quantity: item.quantity,
+            total: (item.cash + item.card)
           },
           style: {
             fontSize: 16
@@ -105,13 +89,8 @@ const Lists: React.FC<IProp> = ({ setShowTabBar }) => {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <>
         <View style={{ flex: 1 }}>
-          <Header
-            title={'My Shopping Lists'}
-            icon='plus'
-            buttonPress={() => { setShowNewModal(true); setShowTabBar(false) }}
-          />
+          <Header title='My Lists' canGoBack={navigation.canGoBack()}/>
           <SafeAreaView style={styles.container}>
-            <Search title='Mercado' marginTop={-25}/>
             <View style={styles.containerContent}>
               {
                 loading
@@ -120,8 +99,7 @@ const Lists: React.FC<IProp> = ({ setShowTabBar }) => {
                   :
                   <FlatList
                     data={lists}
-                    extraData={refresh}
-                    keyExtractor={item => item._id}
+                    keyExtractor={item => item.id}
                     renderItem={renderItem}
                     ListEmptyComponent={<NoItems />}
                     contentContainerStyle={lists.length === 0 && { flex: 1 }}
@@ -129,17 +107,10 @@ const Lists: React.FC<IProp> = ({ setShowTabBar }) => {
               }
             </View>
           </SafeAreaView>
+          <FloatActionButton onPress={handleCreate}>
+            <Icon name="plus" size={RFValue(20)} color={theme.colors.altText}/>
+          </FloatActionButton>
         </View>
-        {showNewModal &&
-          <NewItemModal
-            show={showNewModal}
-            handleClose={() => {
-              setShowNewModal(false)
-              setShowTabBar(true)
-              Keyboard.dismiss()
-            }}
-          />
-        }
       </>
     </TouchableWithoutFeedback>
   )

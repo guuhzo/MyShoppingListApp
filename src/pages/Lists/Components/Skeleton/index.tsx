@@ -7,12 +7,6 @@ const Skeleton: React.FC = () => {
   return (
     <View style={ styles.container }>
       <CardSkeleton hasFooter/>
-      <CardSkeleton hasFooter/>
-      <CardSkeleton hasFooter/>
-      <CardSkeleton hasFooter/>
-      <CardSkeleton hasFooter/>
-      <CardSkeleton hasFooter/>
-      <CardSkeleton hasFooter/>
     </View>
   )
 }

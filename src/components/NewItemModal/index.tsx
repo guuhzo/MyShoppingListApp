@@ -8,12 +8,12 @@ import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view
 import { useNavigation } from '@react-navigation/native'
 
 
-import theme from '../../../../global/theme'
-import Realm from '../../../../services/database'
+import theme from '../../global/theme'
+import Realm from '../../services/database'
 
-import Modal from '../../../../components/Modal'
-import ItemNameInput from '../../../../components/ItemNameInput'
-import OutlinedButton from '../../../../components/OutlinedButton'
+import Modal from '../Modal'
+import ItemNameInput from '../ItemNameInput'
+import OutlinedButton from '../OutlinedButton'
 import CurrencyInput from '../CurrencyInput'
 import {
   Title,

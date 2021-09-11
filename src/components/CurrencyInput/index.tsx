@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect } from 'react'
 import { RFValue } from 'react-native-responsive-fontsize'
 
-import theme from '../../../../global/theme'
+import theme from '../../global/theme'
 
 import CurrencyInput from 'react-native-currency-input'
 
