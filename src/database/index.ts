@@ -3,7 +3,7 @@ import SQLiteAdapter from '@nozbe/watermelondb/adapters/sqlite'
 import schemas from './schemas'
 import List from './model/List'
 import Product from './model/Product'
-import ProductList from './model/ProductList'
+import ListItem from './model/ListItem'
 
 const adapter = new SQLiteAdapter({
  schema: schemas
@@ -14,7 +14,7 @@ const database = new Database({
   modelClasses: [
     List,
     Product,
-    ProductList
+    ListItem
   ]
 })
 

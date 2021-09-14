@@ -6,7 +6,19 @@ const productSchema = tableSchema({
     {
       name: 'name',
       type: 'string'
-    }
+    },
+    {
+      name: 'name',
+      type: 'string'
+    },
+    {
+      name: 'last_price',
+      type: 'number'
+    },
+    {
+      name: 'available',
+      type: 'boolean'
+    },
   ]
 })
 

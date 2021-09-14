@@ -9,7 +9,7 @@ interface IProps {
   itemId: string;
   value: number;
   editable: boolean;
-  updateValue( _id: string ,value: number): void;
+  updateValue( id: string ,value: number): void;
 }
 
 const ListCurrencyInput: React.FC<IProps> = ({ 
@@ -30,6 +30,7 @@ const ListCurrencyInput: React.FC<IProps> = ({
         prefix='R$'
         minValue={0}
         editable={editable}
+        maxValue={999999.99}
         style={{
           color: theme.colors.text,
           paddingVertical: 0,
@@ -37,7 +38,7 @@ const ListCurrencyInput: React.FC<IProps> = ({
           borderBottomColor: theme.colors.agnostic,
           borderStyle: 'solid',
           borderBottomWidth: 1,
-          fontSize: RFValue(14)
+          fontSize: RFValue(16)
         }}
       />
     </>

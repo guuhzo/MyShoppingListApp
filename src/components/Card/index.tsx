@@ -30,6 +30,7 @@ interface IProps {
       fontSize?: number;
     }
   };
+  
 }
 
 const Card: React.FC<IProps> = ({ header, footer }) => {
@@ -53,7 +54,7 @@ const Card: React.FC<IProps> = ({ header, footer }) => {
   }, [])
 
   return (
-    <TouchableOpacity>
+    // <TouchableOpacity>
         <View style={[ styles.container, { height: hasFooter ? RFValue(104) : RFValue(40)}]}>
           <Header>
             <Title
@@ -71,7 +72,7 @@ const Card: React.FC<IProps> = ({ header, footer }) => {
         </View>
 
 
-    </TouchableOpacity>
+    // </TouchableOpacity>
   )
 }
 

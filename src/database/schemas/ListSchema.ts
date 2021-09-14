@@ -17,7 +17,7 @@ const listSchema = tableSchema({
     },
     {
       name: 'card',
-      type: 'string'
+      type: 'number'
     },
     {
       name: 'done',

@@ -53,7 +53,9 @@ const CreateList: React.FC<Prop> = ({ navigation }) => {
     setCardValue(value)
   }, [cardValue])
 
-  const handleSave = useCallback(() => {
+  const handleConfirm = useCallback(() => {
+    console.log(listName, cashValue, cardValue);
+    
     navigation.navigate('AddProducts', 
       { listName, cash: cashValue, card: cardValue }
     )
@@ -127,7 +129,7 @@ const CreateList: React.FC<Prop> = ({ navigation }) => {
           </Content>
         </SafeAreaView>
         {(cashValue + cardValue > 0 && listName.length > 0) &&
-          <FloatActionButton onPress={handleSave}>
+          <FloatActionButton onPress={handleConfirm}>
             <Icon name="check" size={RFValue(20)} color={theme.colors.altText}/>
           </FloatActionButton>
         }

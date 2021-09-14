@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useCallback } from 'react'
-import theme from '../../global/theme'
-import { StackScreenProps } from '@react-navigation/stack'
+import React, { useState, useEffect, useCallback } from 'react';
+import { StackScreenProps } from '@react-navigation/stack';
 import {
   StyleSheet,
   View,
@@ -8,26 +7,43 @@ import {
   FlatList,
   TouchableWithoutFeedback,
   Keyboard,
-} from 'react-native'
+  RefreshControl,
+} from 'react-native';
+import Icon from 'react-native-vector-icons/Feather';
+import { RFValue } from 'react-native-responsive-fontsize';
+import { TouchableOpacity } from 'react-native-gesture-handler';
+import theme from '../../global/theme';
 
-import { 
-  FloatActionButton 
-} from './styles'
+import { FloatActionButton } from './styles';
 
+import Header from '../../components/Header';
+import Card from '../../components/Card';
+import NoItems from '../../components/NoItems';
+import ListSkeleton from './Components/Skeleton';
 
-import Header from '../../components/Header'
-import Card from '../../components/Card'
-import NoItems from '../../components/NoItems'
-import ListSkeleton from './Components/Skeleton'
+import { StackParamList } from '../../routes';
+import database from '../../database';
+import List from '../../database/model/List';
 
-import { StackParamList } from '../../routes' 
-import Icon from 'react-native-vector-icons/Feather'
-import { RFValue } from 'react-native-responsive-fontsize'
-import database from '../../database'
-import List from '../../database/model/List'
-import ProductList from '../../database/model/ProductList'
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+  },
+  containerContent: {
+    flex: 1,
+    marginTop: 20,
+  },
+  containerEmptyList: {
+    flex: 1,
+  },
+  text: {
+    color: '#000',
+    fontSize: 25,
+  },
+});
 
-type Props = StackScreenProps<StackParamList, 'Lists'>
+type Props = StackScreenProps<StackParamList, 'Lists'>;
 
 interface IList {
   id: string;
@@ -39,100 +55,104 @@ interface IList {
 }
 
 const Lists: React.FC<Props> = ({ navigation }) => {
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(true);
 
-  const [lists, setLists] = useState([] as IList[])
+  const [lists, setLists] = useState([] as List[]);
 
   const loadingLists = useCallback(async () => {
-    setLoading(true)
+    setLoading(true);
 
-    const listsCollection = database.get<List>('lists')
-    const dbLists = await listsCollection.query().fetch()
-   
-    setLists(dbLists)
+    const listsCollection = database.get<List>('lists');
+    const dbLists = await listsCollection.query().fetch();
 
+    setLists(dbLists);
 
-    setLoading(false)
-  }, [lists])
-
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
-    loadingLists()
-  }, [])
+    const unsubscribe = navigation.addListener('focus', () => loadingLists());
+
+    return unsubscribe;
+  }, [loadingLists, navigation]);
 
   const handleCreate = useCallback(() => {
-    navigation.navigate('CreateList')
-  },[])
+    navigation.navigate('CreateList');
+  }, [navigation]);
+
+  const handleRefresh = useCallback(() => {
+    loadingLists();
+  }, [loadingLists]);
+
+  const handlePress = useCallback(
+    (id: string) => {
+      const index = lists.findIndex(list => list.id === id);
+      const list = lists[index];
+
+      if (!list) {
+        return;
+      }
+
+      navigation.navigate('ListDetails', { id: list.id, listName: list.name });
+    },
+    [lists, navigation],
+  );
 
   const renderItem = ({ item }: { item: IList }) => (
-    <View key={item.id}>
+    <TouchableOpacity key={item.id} onPress={() => handlePress(item.id)}>
       <Card
         header={{
           fields: {
-            title: item.name
-          }
+            title: item.name,
+          },
         }}
         footer={{
           fields: {
             quantity: item.quantity,
-            total: (item.cash + item.card)
+            total: item.cash + item.card,
           },
           style: {
-            fontSize: 16
-          }
+            fontSize: 16,
+          },
         }}
       />
-    </View>
-  )
+    </TouchableOpacity>
+  );
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <>
         <View style={{ flex: 1 }}>
-          <Header title='My Lists' canGoBack={navigation.canGoBack()}/>
+          <Header title="My Lists" canGoBack={navigation.canGoBack()} />
           <SafeAreaView style={styles.container}>
             <View style={styles.containerContent}>
-              {
-                loading
-                  ?
-                  <ListSkeleton />
-                  :
-                  <FlatList
-                    data={lists}
-                    keyExtractor={item => item.id}
-                    renderItem={renderItem}
-                    ListEmptyComponent={<NoItems />}
-                    contentContainerStyle={lists.length === 0 && { flex: 1 }}
-                  />
-              }
+              {loading ? (
+                <ListSkeleton />
+              ) : (
+                <FlatList
+                  data={lists}
+                  keyExtractor={item => item.id}
+                  renderItem={renderItem}
+                  refreshControl={
+                    <RefreshControl
+                      refreshing={loading}
+                      onRefresh={handleRefresh}
+                      colors={[theme.colors.primary]}
+                    />
+                  }
+                  ListEmptyComponent={<NoItems />}
+                  contentContainerStyle={lists.length === 0 && { flex: 1 }}
+                />
+              )}
             </View>
           </SafeAreaView>
           <FloatActionButton onPress={handleCreate}>
-            <Icon name="plus" size={RFValue(20)} color={theme.colors.altText}/>
+            <Icon name="plus" size={RFValue(20)} color={theme.colors.altText} />
           </FloatActionButton>
         </View>
       </>
     </TouchableWithoutFeedback>
-  )
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff'
-  },
-  containerContent: {
-    flex: 1,
-    marginTop: 20,
-
-  },
-  containerEmptyList: {
-    flex: 1,
-  },
-  text: {
-    color: '#000',
-    fontSize: 25
-  }
-});
+  );
+};
 
 export default Lists;
