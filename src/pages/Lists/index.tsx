@@ -123,7 +123,11 @@ const Lists: React.FC<Props> = ({ navigation }) => {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <>
         <View style={{ flex: 1 }}>
-          <Header title="My Lists" canGoBack={navigation.canGoBack()} />
+          <Header
+            title="My Lists"
+            canGoBack={navigation.canGoBack()}
+            handleBack={() => navigation.goBack()}
+          />
           <SafeAreaView style={styles.container}>
             <View style={styles.containerContent}>
               {loading ? (

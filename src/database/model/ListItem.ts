@@ -29,15 +29,19 @@ class ListItem extends Model {
 
   @immutableRelation('products', 'product_id') product!: Relation<Product>;
 
-  @writer async addQuantity() {
+  @writer async addQuantity(): Promise<void> {
     await this.update(item => {
-      item.quantity += 1;
+      if (item.quantity < 99) {
+        item.quantity += 1;
+      }
     });
   }
 
-  @writer async removeQuantity() {
+  @writer async removeQuantity(): Promise<void> {
     await this.update(item => {
-      item.quantity -= 1;
+      if (item.quantity > 0) {
+        item.quantity -= 1;
+      }
     });
   }
 }

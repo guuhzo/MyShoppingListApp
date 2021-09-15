@@ -193,6 +193,7 @@ const AddProducts: React.FC<Props> = ({ route, navigation }) => {
           <Header
             title={route.params.listName}
             canGoBack={navigation.canGoBack()}
+            handleBack={() => navigation.goBack()}
           />
           <Modal animationType="fade" visible={showModal} transparent>
             <ModalContainer>
@@ -253,7 +254,11 @@ const AddProducts: React.FC<Props> = ({ route, navigation }) => {
                   </ItemContainer>
                 </TouchableOpacity>
               )}
-              contentContainerStyle={products.length === 0 && { flex: 1 }}
+              contentContainerStyle={
+                products.length === 0
+                  ? { flex: 1 }
+                  : { paddingBottom: RFValue(70) }
+              }
             />
             {selectedProducts.length > 0 && (
               <FloatActionButton onPress={handleSave} disabled={saving}>
