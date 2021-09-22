@@ -1,25 +1,25 @@
-import { tableSchema } from '@nozbe/watermelondb'
+import { tableSchema } from '@nozbe/watermelondb';
 
 const productSchema = tableSchema({
   name: 'products',
   columns: [
     {
       name: 'name',
-      type: 'string'
+      type: 'string',
     },
     {
       name: 'name',
-      type: 'string'
+      type: 'string',
     },
     {
       name: 'last_price',
-      type: 'number'
+      type: 'number',
     },
     {
       name: 'available',
-      type: 'boolean'
+      type: 'boolean',
     },
-  ]
-})
+  ],
+});
 
-export default productSchema
+export default productSchema;

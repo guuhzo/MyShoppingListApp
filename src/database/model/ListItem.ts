@@ -1,6 +1,5 @@
 import { Model, Relation } from '@nozbe/watermelondb';
 import { field, immutableRelation } from '@nozbe/watermelondb/decorators';
-import { writer } from '@nozbe/watermelondb/decorators/action';
 import { Associations } from '@nozbe/watermelondb/Model';
 import List from './List';
 import Product from './Product';
@@ -28,22 +27,6 @@ class ListItem extends Model {
   @immutableRelation('lists', 'list_id') list!: Relation<List>;
 
   @immutableRelation('products', 'product_id') product!: Relation<Product>;
-
-  @writer async addQuantity(): Promise<void> {
-    await this.update(item => {
-      if (item.quantity < 99) {
-        item.quantity += 1;
-      }
-    });
-  }
-
-  @writer async removeQuantity(): Promise<void> {
-    await this.update(item => {
-      if (item.quantity > 0) {
-        item.quantity -= 1;
-      }
-    });
-  }
 }
 
 export default ListItem;

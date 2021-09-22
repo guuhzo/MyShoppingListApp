@@ -88,7 +88,7 @@ const AddProducts: React.FC<Props> = ({ route, navigation }) => {
   const handleSave = useCallback(async () => {
     setSaving(true);
 
-    await database.write(async () => {
+    await database.action(async () => {
       const list = await database.get<List>('lists').create(list => {
         list.name = listName;
         list.cash = cash;
@@ -160,7 +160,7 @@ const AddProducts: React.FC<Props> = ({ route, navigation }) => {
 
   const handleCreateProduct = useCallback(async () => {
     const productsCollection = database.get<Product>('products');
-    await database.write(async () => {
+    await database.action(async () => {
       const newProduct = await productsCollection.create(product => {
         product.name = newProductName;
         product.available = true;
@@ -193,7 +193,6 @@ const AddProducts: React.FC<Props> = ({ route, navigation }) => {
           <Header
             title={route.params.listName}
             canGoBack={navigation.canGoBack()}
-            handleBack={() => navigation.goBack()}
           />
           <Modal animationType="fade" visible={showModal} transparent>
             <ModalContainer>

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback } from 'react';
 import { RFValue } from 'react-native-responsive-fontsize';
 
 import CurrencyInput from 'react-native-currency-input';

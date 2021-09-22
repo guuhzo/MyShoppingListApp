@@ -1,5 +1,5 @@
-import styled from 'styled-components/native'
-import { RFValue } from 'react-native-responsive-fontsize'
+import styled from 'styled-components/native';
+import { RFValue } from 'react-native-responsive-fontsize';
 
 interface IContainerProps {
   marginTop: number;
@@ -11,11 +11,11 @@ export const Container = styled.View<IContainerProps>`
   margin-left: ${RFValue(30)}px;
   margin-right: ${RFValue(30)}px;
   margin-top: ${({ marginTop }) => RFValue(marginTop)}px;
-  background-color: ${({theme}) => theme.colors.container};
+  background-color: ${({ theme }) => theme.colors.container};
   border-radius: ${RFValue(8)}px;
   padding-left: ${RFValue(20)}px;
   padding-right: ${RFValue(20)}px;
-`
+`;
 
 export const TextInput = styled.TextInput`
   flex: 1;
@@ -23,4 +23,4 @@ export const TextInput = styled.TextInput`
   margin-left: ${RFValue(12)}px;
   margin-right: ${RFValue(12)}px;
   color: ${({ theme }) => theme.colors.text};
-`
+`;

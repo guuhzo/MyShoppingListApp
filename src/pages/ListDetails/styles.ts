@@ -4,13 +4,11 @@ import styled, { css } from 'styled-components/native';
 
 export const Container = styled.View`
   flex: 1;
-  height: 100%;
   background-color: ${({ theme }) => theme.colors.background};
 `;
 
 export const Content = styled.View`
   height: 100%;
-  margin-top: ${RFValue(16)}px;
 `;
 
 export const Section = styled.View`
@@ -188,4 +186,17 @@ export const FooterText = styled.Text`
   font-size: ${RFValue(16)}px;
   font-weight: bold;
   margin-left: 4px;
+`;
+
+export const FloatActionButton = styled.TouchableOpacity`
+  align-items: center;
+  justify-content: center;
+  border-radius: 50px;
+  background-color: ${({ theme }) => theme.colors.primary};
+  padding: ${RFValue(14)}px;
+  margin-right: ${RFValue(16)}px;
+  margin-bottom: ${RFValue(56) + (isIphoneX() ? getBottomSpace() : 0)}px;
+  position: absolute;
+  bottom: 0;
+  right: 0;
 `;

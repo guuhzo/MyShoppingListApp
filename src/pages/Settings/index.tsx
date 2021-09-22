@@ -57,7 +57,7 @@ const Settings: React.FC<Props> = ({ navigation }) => {
     const productsCollection = database.get<Product>('products');
     const listItemsCollection = database.get<ListItem>('list_items');
 
-    await database.write(async () => {
+    await database.action(async () => {
       const lists = await listsCollection.query().fetch();
       const products = await productsCollection.query().fetch();
       const relations = await listItemsCollection.query().fetch();
@@ -86,11 +86,7 @@ const Settings: React.FC<Props> = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <Header
-        title="Beta Admin View"
-        canGoBack={navigation.canGoBack()}
-        handleBack={() => navigation.goBack()}
-      />
+      <Header title="Beta Admin View" canGoBack={navigation.canGoBack()} />
       <View style={{ alignItems: 'center', margin: 5 }}>
         <Text style={{ color: 'red', fontSize: 24, fontWeight: 'bold' }}>
           ATENÇÃO
@@ -115,7 +111,7 @@ const Settings: React.FC<Props> = ({ navigation }) => {
             Process completed successfully
           </Text>
         )}
-        <TouchableOpacity onPress={handleSync}>
+        <TouchableOpacity onPress={() => navigation.navigate('RealeaseNotes')}>
           <View style={styles.button}>
             <Text style={styles.text}>Release Notes</Text>
           </View>

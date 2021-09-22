@@ -8,6 +8,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   RefreshControl,
+  StatusBar,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import { RFValue } from 'react-native-responsive-fontsize';
@@ -105,14 +106,14 @@ const Lists: React.FC<Props> = ({ navigation }) => {
           fields: {
             title: item.name,
           },
+          style: {
+            fontSize: 16,
+          },
         }}
         footer={{
           fields: {
             quantity: item.quantity,
             total: item.cash + item.card,
-          },
-          style: {
-            fontSize: 16,
           },
         }}
       />

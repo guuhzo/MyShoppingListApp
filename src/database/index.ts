@@ -12,6 +12,7 @@ const adapter = new SQLiteAdapter({
 const database = new Database({
   adapter,
   modelClasses: [List, Product, ListItem],
+  actionsEnabled: true,
 });
 
 export default database;

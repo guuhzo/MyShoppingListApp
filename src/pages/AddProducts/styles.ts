@@ -1,5 +1,6 @@
 import styled from 'styled-components/native';
 import { RFValue } from 'react-native-responsive-fontsize';
+import { getBottomSpace, isIphoneX } from 'react-native-iphone-x-helper';
 
 export const ModalContainer = styled.View`
   flex: 1;
@@ -23,6 +24,7 @@ export const ProductNameInput = styled.View`
 export const TextInput = styled.TextInput`
   flex: 1;
   font-size: ${RFValue(24)}px;
+  margin-left: ${RFValue(8)}px;
   color: ${({ theme }) => theme.colors.text};
 `;
 export const ModalButtonsContainer = styled.View`
@@ -89,7 +91,7 @@ export const FloatActionButton = styled.TouchableOpacity`
   background-color: ${({ theme }) => theme.colors.primary};
   padding: ${RFValue(14)}px;
   margin-right: 16px;
-  margin-bottom: 16px;
+  margin-bottom: ${RFValue(16) + (isIphoneX() ? getBottomSpace() : 0)}px;
   position: absolute;
   bottom: 0;
   right: 0;

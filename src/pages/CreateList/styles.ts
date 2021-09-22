@@ -21,6 +21,7 @@ export const ListNameInput = styled.View`
 export const TextInput = styled.TextInput`
   flex: 1;
   font-size: ${RFValue(24)}px;
+  margin-left: ${RFValue(8)}px;
   color: ${({ theme }) => theme.colors.text};
 `;
 
@@ -83,12 +84,13 @@ export const FloatActionButton = styled.TouchableOpacity`
   border-radius: 50px;
   background-color: ${({ theme }) => theme.colors.primary};
   padding: ${RFValue(14)}px;
-  margin-right: 16px;
-  margin-bottom: 16px;
+  margin-right: ${RFValue(16)}px;
+  margin-bottom: ${RFValue(56) + (isIphoneX() ? getBottomSpace() : 0)}px;
   position: absolute;
   bottom: 0;
   right: 0;
 `;
+
 export const Footer = styled.View`
   position: absolute;
   left: 0;

@@ -1,32 +1,33 @@
 import React, { useState } from 'react';
-import { TouchableOpacity, StatusBar, View } from 'react-native';
+import { StatusBar, View } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import { useNavigation } from '@react-navigation/native';
 
 import { RFValue } from 'react-native-responsive-fontsize';
-import { TouchableWithoutFeedback } from 'react-native-gesture-handler';
+import {
+  TouchableWithoutFeedback,
+  TouchableOpacity,
+} from 'react-native-gesture-handler';
 import { Container, Content, Title, Options } from './styles';
 import theme from '../../global/theme';
 
 type IProps = {
   title: string;
   canGoBack: boolean;
-  handleBack(): unknown;
 };
 
-const Header: React.FC<IProps> = ({
-  title,
-  children,
-  canGoBack,
-  handleBack,
-}) => {
+const Header: React.FC<IProps> = ({ title, children, canGoBack }) => {
   const [taps, setTaps] = useState(0);
   const navigation = useNavigation();
 
   return (
     <TouchableWithoutFeedback onPress={() => setTaps(taps + 1)}>
       <Container>
-        <StatusBar animated backgroundColor={theme.colors.primary} />
+        <StatusBar
+          animated
+          backgroundColor={theme.colors.primary}
+          barStyle="light-content"
+        />
         <Content>
           <View
             style={{
@@ -38,7 +39,7 @@ const Header: React.FC<IProps> = ({
             {canGoBack && (
               <TouchableOpacity
                 style={{ marginRight: RFValue(8) }}
-                onPress={handleBack}
+                onPress={navigation.goBack}
               >
                 <Icon
                   name="arrow-left"

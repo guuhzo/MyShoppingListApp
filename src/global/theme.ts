@@ -12,9 +12,9 @@ export default {
     agnostic: '#C4C4C4',
 
     text: '#4D4D4D',
-    altText: '#EFEFEF',  
+    altText: '#EFEFEF',
     background: '#FFF',
     container: '#F0F0F5',
     placeHolderText: '#B7B7CC',
-  }
-}
+  },
+};

@@ -14,6 +14,8 @@
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		98F34E1901C2CEC133B4E460 /* libPods-MyShoppingListApp.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 08B7ABF1A95AF0F7FDF06046 /* libPods-MyShoppingListApp.a */; };
 		A0183E2489F1BA1F677F4130 /* libPods-MyShoppingListApp-MyShoppingListAppTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 65BDB4ED1682BB17EA8DA38E /* libPods-MyShoppingListApp-MyShoppingListAppTests.a */; };
+		DAA8C9C726F3CD8300552A4E /* File.swift in Sources */ = {isa = PBXBuildFile; fileRef = DAA8C9C626F3CD8300552A4E /* File.swift */; };
+		DAA8C9D426F3DBFF00552A4E /* libWatermelonDB.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DAA8C9CD26F3CFF600552A4E /* libWatermelonDB.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -23,6 +25,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = 13B07F861A680F5B00A75B9A;
 			remoteInfo = MyShoppingListApp;
+		};
+		DAA8C9CC26F3CFF600552A4E /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DAA8C9C826F3CFF600552A4E /* WatermelonDB.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 6E660D5E213BCCD300189354;
+			remoteInfo = WatermelonDB;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -54,6 +63,10 @@
 		9FB986948E9543DD97D4D98F /* Octicons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Octicons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Octicons.ttf"; sourceTree = "<group>"; };
 		CB2F43F12EC04F1FAD74180E /* SimpleLineIcons.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = SimpleLineIcons.ttf; path = "../node_modules/react-native-vector-icons/Fonts/SimpleLineIcons.ttf"; sourceTree = "<group>"; };
 		D5D4FFA5807A4CD2B25FA96C /* FontAwesome5_Brands.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome5_Brands.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Brands.ttf"; sourceTree = "<group>"; };
+		DAA8C9C526F3CD8200552A4E /* MyShoppingListApp-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "MyShoppingListApp-Bridging-Header.h"; sourceTree = "<group>"; };
+		DAA8C9C626F3CD8300552A4E /* File.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = File.swift; sourceTree = "<group>"; };
+		DAA8C9C826F3CFF600552A4E /* WatermelonDB.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = WatermelonDB.xcodeproj; path = "../node_modules/@nozbe/watermelondb/native/ios/WatermelonDB.xcodeproj"; sourceTree = "<group>"; };
+		DAA8C9D126F3DBFB00552A4E /* MyShoppingListApp.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = MyShoppingListApp.xcodeproj; sourceTree = "<group>"; };
 		DCA9ABB933CC4819836AFCD7 /* Entypo.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Entypo.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Entypo.ttf"; sourceTree = "<group>"; };
 		E15DC55356D948E78D2A4F11 /* Fontisto.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = Fontisto.ttf; path = "../node_modules/react-native-vector-icons/Fonts/Fontisto.ttf"; sourceTree = "<group>"; };
 		EA220CF5A9B44343951EE2CD /* FontAwesome5_Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = FontAwesome5_Regular.ttf; path = "../node_modules/react-native-vector-icons/Fonts/FontAwesome5_Regular.ttf"; sourceTree = "<group>"; };
@@ -75,6 +88,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DAA8C9D426F3DBFF00552A4E /* libWatermelonDB.a in Frameworks */,
 				98F34E1901C2CEC133B4E460 /* libPods-MyShoppingListApp.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -115,6 +129,8 @@
 		2D16E6871FA4F8E400B85C8A /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				DAA8C9D126F3DBFB00552A4E /* MyShoppingListApp.xcodeproj */,
+				DAA8C9C826F3CFF600552A4E /* WatermelonDB.xcodeproj */,
 				ED297162215061F000B7C4FE /* JavaScriptCore.framework */,
 				08B7ABF1A95AF0F7FDF06046 /* libPods-MyShoppingListApp.a */,
 				65BDB4ED1682BB17EA8DA38E /* libPods-MyShoppingListApp-MyShoppingListAppTests.a */,
@@ -143,6 +159,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
+				DAA8C9C626F3CD8300552A4E /* File.swift */,
 				13B07FAE1A68108700A75B9A /* MyShoppingListApp */,
 				832341AE1AAA6A7D00B99B32 /* Libraries */,
 				00E356EF1AD99517003FC87E /* MyShoppingListAppTests */,
@@ -150,6 +167,7 @@
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				7120A16798CC5E7DD9F2463B /* Pods */,
 				D35D55234AB342498460663B /* Resources */,
+				DAA8C9C526F3CD8200552A4E /* MyShoppingListApp-Bridging-Header.h */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -186,6 +204,21 @@
 				FCBFED18E9D64215AA725A81 /* Zocial.ttf */,
 			);
 			name = Resources;
+			sourceTree = "<group>";
+		};
+		DAA8C9C926F3CFF600552A4E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				DAA8C9CD26F3CFF600552A4E /* libWatermelonDB.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		DAA8C9D226F3DBFB00552A4E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -245,7 +278,7 @@
 						TestTargetID = 13B07F861A680F5B00A75B9A;
 					};
 					13B07F861A680F5B00A75B9A = {
-						LastSwiftMigration = 1120;
+						LastSwiftMigration = 1250;
 					};
 				};
 			};
@@ -260,6 +293,16 @@
 			mainGroup = 83CBB9F61A601CBA00E9B192;
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
 			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = DAA8C9D226F3DBFB00552A4E /* Products */;
+					ProjectRef = DAA8C9D126F3DBFB00552A4E /* MyShoppingListApp.xcodeproj */;
+				},
+				{
+					ProductGroup = DAA8C9C926F3CFF600552A4E /* Products */;
+					ProjectRef = DAA8C9C826F3CFF600552A4E /* WatermelonDB.xcodeproj */;
+				},
+			);
 			projectRoot = "";
 			targets = (
 				13B07F861A680F5B00A75B9A /* MyShoppingListApp */,
@@ -267,6 +310,16 @@
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		DAA8C9CD26F3CFF600552A4E /* libWatermelonDB.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libWatermelonDB.a;
+			remoteRef = DAA8C9CC26F3CFF600552A4E /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
 
 /* Begin PBXResourcesBuildPhase section */
 		00E356EC1AD99517003FC87E /* Resources */ = {
@@ -415,6 +468,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				13B07FBC1A68108700A75B9A /* AppDelegate.m in Sources */,
+				DAA8C9C726F3CD8300552A4E /* File.swift in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -434,6 +488,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 2305C91351008871FEAE103F /* Pods-MyShoppingListApp-MyShoppingListAppTests.debug.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				GCC_PREPROCESSOR_DEFINITIONS = (
 					"DEBUG=1",
@@ -461,6 +516,7 @@
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 0A413D9D8BECF2A7FDF5A373 /* Pods-MyShoppingListApp-MyShoppingListAppTests.release.xcconfig */;
 			buildSettings = {
+				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				COPY_PHASE_STRIP = NO;
 				INFOPLIST_FILE = MyShoppingListAppTests/Info.plist;
@@ -488,7 +544,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 79B2T5G7EZ;
+				DEVELOPMENT_TEAM = D9WW2HX867;
 				ENABLE_BITCODE = NO;
 				INFOPLIST_FILE = MyShoppingListApp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -500,8 +556,9 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = br.com.myshoppingteam.MyShoppingListApp;
 				PRODUCT_NAME = MyShoppingListApp;
+				SWIFT_OBJC_BRIDGING_HEADER = "MyShoppingListApp-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
@@ -515,7 +572,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CLANG_ENABLE_MODULES = YES;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_TEAM = 79B2T5G7EZ;
+				DEVELOPMENT_TEAM = D9WW2HX867;
 				INFOPLIST_FILE = MyShoppingListApp/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
@@ -526,8 +583,9 @@
 					"-ObjC",
 					"-lc++",
 				);
-				PRODUCT_BUNDLE_IDENTIFIER = "org.reactjs.native.example.$(PRODUCT_NAME:rfc1034identifier)";
+				PRODUCT_BUNDLE_IDENTIFIER = br.com.myshoppingteam.MyShoppingListApp;
 				PRODUCT_NAME = MyShoppingListApp;
+				SWIFT_OBJC_BRIDGING_HEADER = "MyShoppingListApp-Bridging-Header.h";
 				SWIFT_VERSION = 5.0;
 				VERSIONING_SYSTEM = "apple-generic";
 			};

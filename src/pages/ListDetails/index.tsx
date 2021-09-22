@@ -1,16 +1,16 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable no-await-in-loop */
 import React, { useCallback, useEffect, useState } from 'react';
-import { Keyboard, Text, Modal, Dimensions } from 'react-native';
+import { Keyboard, Text, Dimensions, ActivityIndicator } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 
 import Icon from 'react-native-vector-icons/Feather';
 import { RFValue } from 'react-native-responsive-fontsize';
 import {
-  ScrollView,
-  TouchableOpacity,
   TouchableWithoutFeedback,
+  TouchableOpacity,
 } from 'react-native-gesture-handler';
 import { StackParamList } from '../../routes';
 import Header from '../../components/Header';
@@ -27,12 +27,6 @@ import {
   PCText,
   PCQuantityControl,
   PCQuantityControlItem,
-  ModalContainer,
-  ModalContent,
-  ModalTitle,
-  ModalButtonsContainer,
-  ModalButtonConfirm,
-  ModalButtonCancel,
   Footer,
   FooterTitle,
   FooterText,
@@ -54,8 +48,8 @@ interface IEditableItem {
 }
 
 const ListDetails: React.FC<Prop> = ({ navigation, route }) => {
+  const [saving, setSaving] = useState(false);
   const [hasChange, setHasChange] = useState(false);
-  const [showModal, setShowModal] = useState(false);
   const [list, setList] = useState({} as List);
   const [editableItems, setEditableItems] = useState([] as IEditableItem[]);
   const [itemsDb, setItemsDb] = useState([] as ListItem[]);
@@ -86,9 +80,28 @@ const ListDetails: React.FC<Prop> = ({ navigation, route }) => {
     setLoading(false);
   }, [id]);
 
+  const handleSave = useCallback(async () => {
+    setSaving(true);
+    const preparedItems = [] as ListItem[];
+
+    for (const item of editableItems) {
+      const index = itemsDb.findIndex(itemDb => itemDb.id === item.id);
+      const preparedItem = itemsDb[index].prepareUpdate(itemDb => {
+        itemDb.price = item.price;
+        itemDb.quantity = item.quantity;
+      });
+      preparedItems.push(preparedItem);
+    }
+    database.action(async () => {
+      await database.batch(...preparedItems);
+    });
+    setSaving(false);
+    navigation.goBack();
+  }, [editableItems, itemsDb, navigation]);
+
   useEffect(() => {
     loadList();
-  }, [loadList, route]);
+  }, [loadList]);
 
   const handleItemChange = useCallback(
     (id: string, value: number) => {
@@ -127,35 +140,6 @@ const ListDetails: React.FC<Prop> = ({ navigation, route }) => {
     [editableItems],
   );
 
-  const handleBack = useCallback(() => {
-    if (hasChange) {
-      setShowModal(true);
-    } else {
-      navigation.goBack();
-    }
-  }, [hasChange, navigation]);
-
-  const handleSave = useCallback(() => {
-    const preparedItems = [] as ListItem[];
-
-    for (const item of editableItems) {
-      const index = itemsDb.findIndex(itemDb => itemDb.id === item.id);
-      const preparedItem = itemsDb[index].prepareUpdate(itemDb => {
-        itemDb.price = item.price;
-        itemDb.quantity = item.quantity;
-      });
-      preparedItems.push(preparedItem);
-    }
-    database.write(async () => {
-      await database.batch(...preparedItems);
-    });
-
-    setHasChange(false);
-    setShowModal(false);
-
-    navigation.goBack();
-  }, [editableItems, itemsDb, navigation]);
-
   return (
     <TouchableWithoutFeedback
       onPress={Keyboard.dismiss}
@@ -165,25 +149,29 @@ const ListDetails: React.FC<Prop> = ({ navigation, route }) => {
         width: Dimensions.get('window').width,
       }}
     >
-      <Container
-        style={{
-          height: Dimensions.get('window').height,
-          width: Dimensions.get('window').width,
-        }}
-      >
+      <Container>
+        <Header title="My List Details" canGoBack={navigation.canGoBack()}>
+          {hasChange &&
+            (saving ? (
+              <ActivityIndicator color={theme.colors.altText} size="small" />
+            ) : (
+              <TouchableOpacity onPress={handleSave}>
+                <Icon
+                  name="save"
+                  size={RFValue(20)}
+                  color={theme.colors.altText}
+                />
+              </TouchableOpacity>
+            ))}
+        </Header>
         <SafeAreaView style={{ flex: 1 }}>
-          <Header
-            title="My List Details"
-            canGoBack={navigation.canGoBack()}
-            handleBack={handleBack}
-          />
           {!loading && (
-            <ScrollView
+            <KeyboardAwareScrollView
               style={{
                 flexGrow: 1,
               }}
               contentContainerStyle={{
-                paddingBottom: RFValue(60),
+                paddingBottom: RFValue(120),
               }}
             >
               <Content>
@@ -318,54 +306,27 @@ const ListDetails: React.FC<Prop> = ({ navigation, route }) => {
                   ))}
                 </Section>
               </Content>
-            </ScrollView>
+            </KeyboardAwareScrollView>
           )}
-          <Modal animationType="fade" visible={showModal} transparent>
-            <ModalContainer>
-              <ModalContent>
-                <ModalTitle>Hey!!!</ModalTitle>
-                <Text style={{ fontSize: RFValue(16) }}>
-                  You made some changes!!
-                </Text>
-                <Text style={{ fontSize: RFValue(16) }}>
-                  Do you want to save before leaving?
-                </Text>
-                <ModalButtonsContainer>
-                  <ModalButtonCancel
-                    onPress={() => {
-                      setShowModal(false);
-                      navigation.goBack();
-                    }}
-                  >
-                    <Text style={{ color: theme.colors.altText }}>NO</Text>
-                  </ModalButtonCancel>
-                  <ModalButtonConfirm onPress={handleSave}>
-                    <Text style={{ color: theme.colors.altText }}>YES</Text>
-                  </ModalButtonConfirm>
-                </ModalButtonsContainer>
-              </ModalContent>
-            </ModalContainer>
-          </Modal>
-          <Footer>
-            <FooterTitle>
-              <Icon
-                name="shopping-cart"
-                size={RFValue(16)}
-                color={theme.colors.primary}
-              />
-              <FooterText>TOTAL</FooterText>
-            </FooterTitle>
-            <FooterText>
-              {formatCurrency(
-                editableItems.reduce((previousValue, currentItem) => {
-                  return (
-                    previousValue + currentItem.quantity * currentItem.price
-                  );
-                }, 0),
-              )}
-            </FooterText>
-          </Footer>
         </SafeAreaView>
+
+        <Footer>
+          <FooterTitle>
+            <Icon
+              name="shopping-cart"
+              size={RFValue(16)}
+              color={theme.colors.primary}
+            />
+            <FooterText>TOTAL</FooterText>
+          </FooterTitle>
+          <FooterText>
+            {formatCurrency(
+              editableItems.reduce((previousValue, currentItem) => {
+                return previousValue + currentItem.quantity * currentItem.price;
+              }, 0),
+            )}
+          </FooterText>
+        </Footer>
       </Container>
     </TouchableWithoutFeedback>
   );

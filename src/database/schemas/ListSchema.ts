@@ -1,29 +1,29 @@
-import { tableSchema } from '@nozbe/watermelondb'
+import { tableSchema } from '@nozbe/watermelondb';
 
 const listSchema = tableSchema({
   name: 'lists',
   columns: [
     {
       name: 'name',
-      type: 'string'
+      type: 'string',
     },
     {
       name: 'cash',
-      type: 'number'
+      type: 'number',
     },
     {
       name: 'quantity',
-      type: 'number'
+      type: 'number',
     },
     {
       name: 'card',
-      type: 'number'
+      type: 'number',
     },
     {
       name: 'done',
-      type: 'boolean'
+      type: 'boolean',
     },
-  ]
-})
+  ],
+});
 
-export default listSchema
+export default listSchema;

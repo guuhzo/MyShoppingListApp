@@ -31,6 +31,7 @@ import {
   FooterTitle,
   FooterText,
 } from './styles';
+import formatCurrency from '../../utils/formatCurrency';
 
 type Prop = StackScreenProps<StackParamList, 'CreateList'>;
 
@@ -70,12 +71,8 @@ const CreateList: React.FC<Prop> = ({ navigation }) => {
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <Container>
+        <Header title="My New List" canGoBack={navigation.canGoBack()} />
         <SafeAreaView style={{ flex: 1 }}>
-          <Header
-            title="My New List"
-            canGoBack={navigation.canGoBack()}
-            handleBack={() => navigation.goBack()}
-          />
           <Content>
             <ListNameInput>
               <Icon
@@ -163,7 +160,7 @@ const CreateList: React.FC<Prop> = ({ navigation }) => {
             />
             <FooterText>TOTAL</FooterText>
           </FooterTitle>
-          <FooterText>R$0,00</FooterText>
+          <FooterText>{formatCurrency(cardValue + cashValue)}</FooterText>
         </Footer>
         {cashValue + cardValue > 0 && listName.length > 0 && (
           <FloatActionButton onPress={handleConfirm}>
