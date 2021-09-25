@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">My Shopping Lists</string>
+    <string moduleConfig="true" name="CodePushDeploymentKey">O8oLqbVZuK62Cq8qy1S4H6YB37QsIQDU7FDqE</string>
 </resources>

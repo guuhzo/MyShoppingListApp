@@ -7,11 +7,18 @@ import AddProducts from './pages/AddProducts';
 import ListDetails from './pages/ListDetails';
 import Settings from './pages/Settings';
 import RealeaseNotes from './pages/RealeaseNotes';
+import Product from './database/model/Product';
 
 export type StackParamList = {
   Lists: undefined;
-  CreateList: undefined;
-  AddProducts: { listName: string; cash: number; card: number };
+  CreateList: { id: string } | undefined;
+  AddProducts: {
+    listId: string | undefined;
+    listName: string;
+    cash: number;
+    card: number;
+    products: { id: string; name: string; isSelected: boolean }[] | undefined;
+  };
   ListDetails: { id: string; listName: string };
   Settings: undefined;
   RealeaseNotes: undefined;

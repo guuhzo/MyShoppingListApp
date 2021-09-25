@@ -1,6 +1,6 @@
 {
   "name": "myshoppinglistapp",
-  "version": "0.0.1",
+  "version": "0.3.0",
   "private": true,
   "scripts": {
     "android": "react-native run-android",
@@ -25,6 +25,7 @@
     "react": "17.0.1",
     "react-icons": "^4.2.0",
     "react-native": "0.64.0",
+    "react-native-code-push": "^7.0.3",
     "react-native-currency-input": "^1.0.0",
     "react-native-gesture-handler": "^1.10.3",
     "react-native-get-random-values": "^1.7.0",
@@ -35,6 +36,7 @@
     "react-native-safe-area-context": "^3.2.0",
     "react-native-screens": "^3.2.0",
     "react-native-skeleton-content": "^1.0.22",
+    "react-native-splash-screen": "^3.2.0",
     "react-native-status-bar-height": "^2.6.0",
     "react-native-svg": "^12.1.1",
     "react-native-svg-transformer": "^0.14.3",

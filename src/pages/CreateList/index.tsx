@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   TouchableWithoutFeedback,
   Keyboard,
@@ -32,14 +32,38 @@ import {
   FooterText,
 } from './styles';
 import formatCurrency from '../../utils/formatCurrency';
+import database from '../../database';
+import List from '../../database/model/List';
 
 type Prop = StackScreenProps<StackParamList, 'CreateList'>;
 
-const CreateList: React.FC<Prop> = ({ navigation }) => {
+interface ISelectedProduct {
+  id: string;
+  name: string;
+  isSelected: boolean;
+}
+
+const CreateList: React.FC<Prop> = ({ navigation, route }) => {
   const [listName, setListName] = useState('');
   const [cashValue, setCashValue] = useState(0);
   const [cardValue, setCardValue] = useState(0);
+  const [products, setProducts] = useState<ISelectedProduct[]>([]);
   const inputRef = useRef<RnTextInput>(null);
+
+  const loadList = useCallback(async (id: string) => {
+    const listsCollection = database.get<List>('lists');
+    const list = await listsCollection.find(id);
+
+    setListName(list.name);
+    setCashValue(list.cash);
+    setCardValue(list.card);
+  }, []);
+
+  useEffect(() => {
+    if (route.params) {
+      loadList(route.params.id);
+    }
+  }, [loadList, route.params]);
 
   const handleChange = useCallback(
     (e: NativeSyntheticEvent<TextInputChangeEventData>) => {
@@ -62,11 +86,13 @@ const CreateList: React.FC<Prop> = ({ navigation }) => {
 
   const handleConfirm = useCallback(() => {
     navigation.navigate('AddProducts', {
+      listId: route.params && route.params.id,
       listName,
       cash: cashValue,
       card: cardValue,
+      products,
     });
-  }, [listName, cashValue, cardValue, navigation]);
+  }, [navigation, route.params, listName, cashValue, cardValue, products]);
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -163,7 +189,7 @@ const CreateList: React.FC<Prop> = ({ navigation }) => {
           <FooterText>{formatCurrency(cardValue + cashValue)}</FooterText>
         </Footer>
         {cashValue + cardValue > 0 && listName.length > 0 && (
-          <FloatActionButton onPress={handleConfirm}>
+          <FloatActionButton onPress={handleConfirm} style={{ elevation: 5 }}>
             <Icon
               name="check"
               size={RFValue(20)}

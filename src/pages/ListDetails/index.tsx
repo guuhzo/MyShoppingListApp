@@ -1,7 +1,14 @@
+/* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 /* eslint-disable no-await-in-loop */
 import React, { useCallback, useEffect, useState } from 'react';
-import { Keyboard, Text, Dimensions, ActivityIndicator } from 'react-native';
+import {
+  Keyboard,
+  Text,
+  Dimensions,
+  ActivityIndicator,
+  View,
+} from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
@@ -30,6 +37,17 @@ import {
   Footer,
   FooterTitle,
   FooterText,
+  OptionsMenu,
+  OptionsMenuItem,
+  OptionsMenuItemText,
+  OptionsMenuSeparator,
+  FloatActionButton,
+  ModalContainer,
+  ModalContent,
+  ModalButtonCancel,
+  ModalButtonConfirm,
+  ModalTitle,
+  ModalButtonsContainer,
 } from './styles';
 import theme from '../../global/theme';
 import database from '../../database';
@@ -50,6 +68,8 @@ interface IEditableItem {
 const ListDetails: React.FC<Prop> = ({ navigation, route }) => {
   const [saving, setSaving] = useState(false);
   const [hasChange, setHasChange] = useState(false);
+  const [showOptionsMenu, setShowOptionsMenu] = useState(false);
+  const [pressCount, setPressCount] = useState(0);
   const [list, setList] = useState({} as List);
   const [editableItems, setEditableItems] = useState([] as IEditableItem[]);
   const [itemsDb, setItemsDb] = useState([] as ListItem[]);
@@ -100,8 +120,10 @@ const ListDetails: React.FC<Prop> = ({ navigation, route }) => {
   }, [editableItems, itemsDb, navigation]);
 
   useEffect(() => {
-    loadList();
-  }, [loadList]);
+    const unsubscribe = navigation.addListener('focus', () => loadList());
+
+    return unsubscribe;
+  }, [loadList, navigation]);
 
   const handleItemChange = useCallback(
     (id: string, value: number) => {
@@ -116,18 +138,28 @@ const ListDetails: React.FC<Prop> = ({ navigation, route }) => {
   );
 
   const handleQuantityPress = useCallback(
-    (id: string, type: 'minus' | 'plus') => {
+    (id: string, type: 'minus' | 'plus', quantity?: number) => {
       const index = editableItems.findIndex(item => item.id === id);
       const item = editableItems[index];
       switch (type) {
         case 'minus':
           if (item.quantity > 0) {
-            item.quantity -= 1;
+            if (quantity && item.quantity - quantity < 0) {
+              item.quantity = 0;
+              return;
+            }
+
+            item.quantity -= quantity || 1;
           }
           break;
         case 'plus':
           if (item.quantity < 99) {
-            item.quantity += 1;
+            if (quantity && item.quantity + quantity > 99) {
+              item.quantity = 99;
+              return;
+            }
+
+            item.quantity += quantity || 1;
           }
           break;
         default:
@@ -140,32 +172,89 @@ const ListDetails: React.FC<Prop> = ({ navigation, route }) => {
     [editableItems],
   );
 
+  const handleDeleteList = useCallback(async () => {
+    setLoading(true);
+    const preparedItems = [] as ListItem[];
+
+    for (const item of itemsDb) {
+      const preparedItem = item.prepareDestroyPermanently();
+      preparedItems.push(preparedItem);
+    }
+
+    await database.action(async () => {
+      await database.batch(...preparedItems);
+      await list.destroyPermanently();
+    });
+
+    setLoading(false);
+    navigation.goBack();
+  }, [itemsDb, list, navigation]);
+
+  const handleFinishList = useCallback(async () => {
+    setLoading(true);
+    await database.action(async () => {
+      await list.update(item => {
+        item.done = true;
+      });
+    });
+
+    setLoading(false);
+    navigation.goBack();
+  }, [list, navigation]);
+
+  const handleEditList = useCallback(async () => {
+    navigation.navigate('CreateList', { id: list.id });
+  }, [list, navigation]);
+
+  const handleDimissKeyboard = useCallback(
+    (keep?: boolean) => {
+      Keyboard.dismiss();
+
+      if (keep) {
+        setShowOptionsMenu(true);
+        setPressCount(pressCount + 1);
+      } else if (!keep && pressCount > 1) {
+        setShowOptionsMenu(false);
+        setPressCount(0);
+      } else {
+        setPressCount(pressCount + 1);
+      }
+    },
+    [pressCount],
+  );
+
   return (
     <TouchableWithoutFeedback
-      onPress={Keyboard.dismiss}
+      onPress={handleDimissKeyboard}
       accessible={false}
       style={{
-        height: Dimensions.get('window').height,
-        width: Dimensions.get('window').width,
+        height: '100%',
+        width: '100%',
       }}
     >
       <Container>
         <Header title="My List Details" canGoBack={navigation.canGoBack()}>
-          {hasChange &&
-            (saving ? (
-              <ActivityIndicator color={theme.colors.altText} size="small" />
-            ) : (
-              <TouchableOpacity onPress={handleSave}>
-                <Icon
-                  name="save"
-                  size={RFValue(20)}
-                  color={theme.colors.altText}
-                />
-              </TouchableOpacity>
-            ))}
+          <TouchableOpacity onPress={() => handleDimissKeyboard(true)}>
+            <Icon
+              name="more-vertical"
+              size={RFValue(20)}
+              color={theme.colors.altText}
+            />
+          </TouchableOpacity>
         </Header>
+
         <SafeAreaView style={{ flex: 1 }}>
-          {!loading && (
+          {loading ? (
+            <View
+              style={{
+                justifyContent: 'center',
+                alignItems: 'center',
+                flex: 1,
+              }}
+            >
+              <ActivityIndicator color={theme.colors.primary} size="large" />
+            </View>
+          ) : (
             <KeyboardAwareScrollView
               style={{
                 flexGrow: 1,
@@ -229,76 +318,90 @@ const ListDetails: React.FC<Prop> = ({ navigation, route }) => {
                         </PCText>
                       </PCSection>
                       <PCSection>
-                        <PCQuantityControl>
-                          <TouchableOpacity
-                            disabled={item.quantity <= 0}
-                            onPress={() =>
-                              handleQuantityPress(item.id, 'minus')
-                            }
-                          >
-                            <PCQuantityControlItem
-                              type="minus"
-                              style={{
-                                width: RFValue(36),
-                                borderColor:
-                                  item.quantity <= 0
-                                    ? theme.colors.agnostic
-                                    : theme.colors.cancel,
-                              }}
+                        {!list.done ? (
+                          <PCQuantityControl>
+                            <TouchableOpacity
+                              disabled={item.quantity <= 0}
+                              onPress={() =>
+                                handleQuantityPress(item.id, 'minus')
+                              }
+                              onLongPress={() =>
+                                handleQuantityPress(item.id, 'minus', 10)
+                              }
                             >
-                              <Icon
-                                name="minus"
-                                size={RFValue(16)}
-                                color={
-                                  item.quantity <= 0
-                                    ? theme.colors.agnostic
-                                    : theme.colors.cancel
-                                }
-                              />
+                              <PCQuantityControlItem
+                                type="minus"
+                                style={{
+                                  width: RFValue(36),
+                                  borderColor:
+                                    item.quantity <= 0
+                                      ? theme.colors.agnostic
+                                      : theme.colors.cancel,
+                                }}
+                              >
+                                <Icon
+                                  name="minus"
+                                  size={RFValue(16)}
+                                  color={
+                                    item.quantity <= 0
+                                      ? theme.colors.agnostic
+                                      : theme.colors.cancel
+                                  }
+                                />
+                              </PCQuantityControlItem>
+                            </TouchableOpacity>
+                            <PCQuantityControlItem>
+                              <Text
+                                style={{
+                                  color: theme.colors.text,
+                                  width: RFValue(26),
+                                  textAlign: 'center',
+                                  fontSize: RFValue(16),
+                                }}
+                              >
+                                {item.quantity}
+                              </Text>
                             </PCQuantityControlItem>
-                          </TouchableOpacity>
-                          <PCQuantityControlItem>
-                            <Text
-                              style={{
-                                color: theme.colors.text,
-                                width: RFValue(26),
-                                textAlign: 'center',
-                                fontSize: RFValue(16),
-                              }}
+                            <TouchableOpacity
+                              disabled={item.quantity >= 99}
+                              onPress={() =>
+                                handleQuantityPress(item.id, 'plus')
+                              }
+                              onLongPress={() =>
+                                handleQuantityPress(item.id, 'plus', 10)
+                              }
                             >
-                              {item.quantity}
-                            </Text>
-                          </PCQuantityControlItem>
-                          <TouchableOpacity
-                            disabled={item.quantity >= 99}
-                            onPress={() => handleQuantityPress(item.id, 'plus')}
-                          >
-                            <PCQuantityControlItem
-                              type="plus"
-                              style={{
-                                width: RFValue(36),
-                                borderColor:
-                                  item.quantity >= 99
-                                    ? theme.colors.agnostic
-                                    : theme.colors.ticket,
-                              }}
-                            >
-                              <Icon
-                                name="plus"
-                                size={RFValue(16)}
-                                color={
-                                  item.quantity >= 99
-                                    ? theme.colors.agnostic
-                                    : theme.colors.ticket
-                                }
-                              />
-                            </PCQuantityControlItem>
-                          </TouchableOpacity>
-                        </PCQuantityControl>
+                              <PCQuantityControlItem
+                                type="plus"
+                                style={{
+                                  width: RFValue(36),
+                                  borderColor:
+                                    item.quantity >= 99
+                                      ? theme.colors.agnostic
+                                      : theme.colors.sucess,
+                                }}
+                              >
+                                <Icon
+                                  name="plus"
+                                  size={RFValue(16)}
+                                  color={
+                                    item.quantity >= 99
+                                      ? theme.colors.agnostic
+                                      : theme.colors.sucess
+                                  }
+                                />
+                              </PCQuantityControlItem>
+                            </TouchableOpacity>
+                          </PCQuantityControl>
+                        ) : (
+                          <PCText>{`${item.quantity} ${
+                            item.quantity > 1 ? 'Items' : 'Item'
+                          }`}</PCText>
+                        )}
                         <CurrencyInput
                           value={item.price}
                           updateValue={handleItemChange}
-                          editable
+                          editable={!list.done}
                           itemId={item.id}
                         />
                       </PCSection>
@@ -309,7 +412,40 @@ const ListDetails: React.FC<Prop> = ({ navigation, route }) => {
             </KeyboardAwareScrollView>
           )}
         </SafeAreaView>
-
+        {showOptionsMenu && (
+          <OptionsMenu style={{ elevation: 5 }}>
+            {!list.done && (
+              <>
+                <OptionsMenuItem onPress={handleFinishList}>
+                  <Icon
+                    name="check-circle"
+                    size={RFValue(16)}
+                    color={theme.colors.sucess}
+                  />
+                  <OptionsMenuItemText>Finish shopping</OptionsMenuItemText>
+                </OptionsMenuItem>
+                <OptionsMenuSeparator />
+                <OptionsMenuItem onPress={handleEditList}>
+                  <Icon
+                    name="edit"
+                    size={RFValue(16)}
+                    color={theme.colors.primary}
+                  />
+                  <OptionsMenuItemText>Edit list</OptionsMenuItemText>
+                </OptionsMenuItem>
+                <OptionsMenuSeparator />
+              </>
+            )}
+            <OptionsMenuItem onPress={handleDeleteList}>
+              <Icon
+                name="trash-2"
+                size={RFValue(16)}
+                color={theme.colors.cancel}
+              />
+              <OptionsMenuItemText>Delete list</OptionsMenuItemText>
+            </OptionsMenuItem>
+          </OptionsMenu>
+        )}
         <Footer>
           <FooterTitle>
             <Icon
@@ -327,6 +463,23 @@ const ListDetails: React.FC<Prop> = ({ navigation, route }) => {
             )}
           </FooterText>
         </Footer>
+        {hasChange && (
+          <FloatActionButton
+            onPress={handleSave}
+            disabled={saving}
+            style={{ elevation: 5 }}
+          >
+            {saving ? (
+              <ActivityIndicator color={theme.colors.altText} size="small" />
+            ) : (
+              <Icon
+                name="save"
+                size={RFValue(20)}
+                color={theme.colors.altText}
+              />
+            )}
+          </FloatActionButton>
+        )}
       </Container>
     </TouchableWithoutFeedback>
   );

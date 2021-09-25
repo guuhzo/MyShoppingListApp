@@ -1,6 +1,7 @@
 import { getBottomSpace, isIphoneX } from 'react-native-iphone-x-helper';
 import { RFValue } from 'react-native-responsive-fontsize';
 import styled, { css } from 'styled-components/native';
+import theme from '../../global/theme';
 
 export const Container = styled.View`
   flex: 1;
@@ -90,7 +91,6 @@ interface IPCQuantityControlItemProp {
   type?: 'minus' | 'plus';
 }
 export const PCQuantityControlItem = styled.View<IPCQuantityControlItemProp>`
-  /* flex: 1; */
   height: 100%;
   margin-right: 1px;
   align-items: center;
@@ -109,7 +109,7 @@ export const PCQuantityControlItem = styled.View<IPCQuantityControlItemProp>`
             border: solid;
             border-top-right-radius: ${RFValue(6)}px;
             border-bottom-right-radius: ${RFValue(6)}px;
-            border-color: ${theme.colors.ticket};
+            border-color: ${theme.colors.sucess};
           `
       : css`
           border: solid;
@@ -117,7 +117,7 @@ export const PCQuantityControlItem = styled.View<IPCQuantityControlItemProp>`
         `}
 `;
 export const ModalContainer = styled.View`
-  flex: 1;
+  height: 100%;
   justify-content: center;
   background-color: rgba(0, 0, 0, 0.6);
 `;
@@ -199,4 +199,35 @@ export const FloatActionButton = styled.TouchableOpacity`
   position: absolute;
   bottom: 0;
   right: 0;
+`;
+
+export const OptionsMenu = styled.View`
+  position: absolute;
+  right: 0;
+  top: 0;
+  margin-top: ${RFValue(16)}px;
+  margin-right: ${RFValue(8)}px;
+  background-color: ${({ theme }) => theme.colors.background};
+  border-radius: ${RFValue(8)}px;
+`;
+
+export const OptionsMenuSeparator = styled.View`
+  height: ${RFValue(1.5)}px;
+  width: 100%;
+  background-color: ${({ theme }) => theme.colors.agnostic};
+`;
+
+export const OptionsMenuItem = styled.TouchableOpacity`
+  flex-direction: row;
+  align-items: center;
+  margin-left: ${RFValue(8)}px;
+  margin-right: ${RFValue(8)}px;
+  padding-top: ${RFValue(4)}px;
+  padding-bottom: ${RFValue(4)}px;
+`;
+
+export const OptionsMenuItemText = styled.Text`
+  color: ${({ theme }) => theme.colors.text};
+  margin-left: ${RFValue(4)}px;
+  font-size: ${RFValue(16)}px;
 `;

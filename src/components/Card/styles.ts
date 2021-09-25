@@ -32,6 +32,13 @@ export const Header = styled.View`
   margin-left: ${RFValue(24)}px;
   margin-right: ${RFValue(16)}px;
 `;
+
+export const BadgeContainer = styled.View`
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+`;
+
 interface ITitleProps {
   fontSize?: number;
 }

@@ -15,6 +15,7 @@ import Icon from 'react-native-vector-icons/Feather';
 import { StackScreenProps } from '@react-navigation/stack';
 import { StackActions } from '@react-navigation/native';
 import { RFValue } from 'react-native-responsive-fontsize';
+import { Model, Q } from '@nozbe/watermelondb';
 
 import theme from '../../global/theme';
 import { StackParamList } from '../../routes';
@@ -30,6 +31,7 @@ import NoItems from '../../components/NoItems';
 import {
   ModalContainer,
   ModalContent,
+  ModalTitle,
   ProductNameInput,
   ModalButtonsContainer,
   ModalButtonCancel,
@@ -47,21 +49,73 @@ interface IProduct {
   id: string;
   name: string;
   isSelected?: boolean;
+  available: boolean;
 }
 
 type Props = StackScreenProps<StackParamList, 'AddProducts'>;
 
 const AddProducts: React.FC<Props> = ({ route, navigation }) => {
+  const { listId, listName, cash, card } = route.params;
+  const [loading, setLoading] = useState(true);
+  const [firstRender, setFirstRender] = useState(true);
   const [products, setProducts] = useState<IProduct[]>([]);
   const [saving, setSaving] = useState(false);
   const [newProductName, setNewProductName] = useState('');
   const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
-  const [showModal, setShowModal] = useState(false);
-  const { listName, cash, card } = route.params;
+  const [showAddProductModal, setShowAddProductModal] = useState(false);
+  const [showArchiveModal, setShowArchiveModal] = useState(false);
+  const [productToArchive, setProductToArchive] = useState<string>('');
+  const [archiveModalText, setArchiveModalText] = useState<string>('');
+  const [allProducts, setAllProducts] = useState(false);
+
+  const loadSelectedItems = useCallback(async () => {
+    if (listId && firstRender) {
+      const list = await database.get<List>('lists').find(listId);
+      const listItems = await list.items.fetch();
+
+      const products = [] as IProduct[];
+      const selectedProducts = [] as Product[];
+      for (const item of listItems) {
+        const product = (await item.product.fetch()) as Product;
+        selectedProducts.push(product);
+        products.push({
+          id: product.id,
+          name: product.name,
+          isSelected: true,
+          available: product.available,
+        });
+      }
+
+      setProducts(
+        products
+          .sort((a, b) =>
+            a.isSelected === b.isSelected ? 0 : a.isSelected ? -1 : 1,
+          )
+          .sort((a, b) =>
+            a.available === b.available ? 0 : a.available ? -1 : 1,
+          ),
+      );
+      setSelectedProducts(selectedProducts);
+      setFirstRender(false);
+    }
+  }, [firstRender, listId]);
 
   const loadProducts = useCallback(async () => {
+    if (listId && firstRender) {
+      return;
+    }
     const productsCollection = database.get<Product>('products');
-    const dbProducts = await productsCollection.query().fetch();
+
+    const dbProducts = [] as Product[];
+    if (allProducts) {
+      const products = await productsCollection.query().fetch();
+      dbProducts.push(...products);
+    } else {
+      const products = await productsCollection
+        .query(Q.where('available', true))
+        .fetch();
+      dbProducts.push(...products);
+    }
 
     const products = [] as IProduct[];
     dbProducts.forEach(dbProduct => {
@@ -72,46 +126,111 @@ const AddProducts: React.FC<Props> = ({ route, navigation }) => {
 
       if (filteredProducts.length > 0) isSelected = true;
 
-      products.push({ id: dbProduct.id, name: dbProduct.name, isSelected });
+      products.push({
+        id: dbProduct.id,
+        name: dbProduct.name,
+        isSelected,
+        available: dbProduct.available,
+      });
     });
     setProducts(
-      products.sort((a, b) =>
-        a.isSelected === b.isSelected ? 0 : a.isSelected ? -1 : 1,
-      ),
+      products
+        .sort((a, b) =>
+          a.isSelected === b.isSelected ? 0 : a.isSelected ? -1 : 1,
+        )
+        .sort((a, b) =>
+          a.available === b.available ? 0 : a.available ? -1 : 1,
+        ),
     );
-  }, [selectedProducts]);
+  }, [allProducts, firstRender, listId, selectedProducts]);
 
   useEffect(() => {
+    setLoading(true);
+
+    loadSelectedItems();
     loadProducts();
-  }, [loadProducts]);
+
+    setLoading(false);
+  }, [loadProducts, loadSelectedItems]);
 
   const handleSave = useCallback(async () => {
     setSaving(true);
 
-    await database.action(async () => {
-      const list = await database.get<List>('lists').create(list => {
-        list.name = listName;
-        list.cash = cash;
-        list.card = card;
-        list.quantity = selectedProducts.length;
+    const listsCollection = database.get<List>('lists');
+    const listItemsCollection = database.get<ListItem>('list_items');
+
+    if (listId) {
+      const list = await listsCollection.find(listId);
+      const preparedItems = [] as Model[];
+
+      const prepared = list.prepareUpdate(item => {
+        item.quantity = selectedProducts.length;
+        item.name = listName;
+        item.card = card;
+        item.cash = cash;
       });
 
-      const listItemsCollection = database.get<ListItem>('list_items');
+      preparedItems.push(prepared);
+
+      const listItems = await listItemsCollection
+        .query(Q.where('list_id', listId))
+        .fetch();
+
+      for (const item of listItems) {
+        const product = (await item.product.fetch()) as Product;
+        const hasItem = selectedProducts.includes(product);
+
+        if (!hasItem) {
+          const prepared = item.prepareDestroyPermanently();
+          preparedItems.push(prepared);
+        }
+      }
 
       for (const selectedProduct of selectedProducts) {
-        await listItemsCollection.create(item => {
-          item.quantity = 1;
-          item.price = 0;
-          item.list.set(list);
-          item.product.set(selectedProduct);
-        });
+        const listItem = await listItemsCollection
+          .query(
+            Q.where('product_id', selectedProduct.id),
+            Q.where('list_id', listId),
+          )
+          .fetch();
+
+        if (listItem.length === 0) {
+          const prepared = listItemsCollection.prepareCreate(item => {
+            item.quantity = 1;
+            item.price = 0;
+            item.list.set(list);
+            item.product.set(selectedProduct);
+          });
+          preparedItems.push(prepared);
+        }
       }
-    });
+      await database.action(async () => {
+        await database.batch(...preparedItems);
+      });
+    } else {
+      await database.action(async () => {
+        const list = await listsCollection.create(list => {
+          list.name = listName;
+          list.cash = cash;
+          list.card = card;
+          list.quantity = selectedProducts.length;
+        });
+
+        for (const selectedProduct of selectedProducts) {
+          await listItemsCollection.create(item => {
+            item.quantity = 1;
+            item.price = 0;
+            item.list.set(list);
+            item.product.set(selectedProduct);
+          });
+        }
+      });
+    }
 
     setSaving(false);
-
-    navigation.dispatch(StackActions.popToTop());
-  }, [navigation, listName, cash, card, selectedProducts]);
+    const stackAction = listId ? StackActions.pop(2) : StackActions.popToTop();
+    navigation.dispatch(stackAction);
+  }, [listId, navigation, selectedProducts, listName, cash, card]);
 
   const selectItem = useCallback(
     async (id: string) => {
@@ -142,6 +261,64 @@ const AddProducts: React.FC<Props> = ({ route, navigation }) => {
     [products, selectedProducts],
   );
 
+  const handleArchiveModalVisibility = useCallback(
+    (id: string) => {
+      setShowArchiveModal(!showArchiveModal);
+      setProductToArchive(id);
+    },
+    [showArchiveModal],
+  );
+
+  const handleArchiveItem = useCallback(async () => {
+    if (productToArchive === '') {
+      return;
+    }
+
+    // const productsList = [...products];
+    // const productsIndex = productsList.findIndex(
+    //   item => item.id === productToArchive,
+    // );
+    // const newProductsList = productsList.splice(productsIndex, 1);
+
+    // setProducts(
+    //   newProductsList.sort((a, b) =>
+    //     a.isSelected === b.isSelected ? 0 : a.isSelected ? -1 : 1,
+    //   ),
+    // );
+
+    const selectedProductsList = [...selectedProducts];
+
+    const selectedProductsIndex = selectedProductsList.findIndex(
+      item => item.id === productToArchive,
+    );
+
+    let newSelectedProducts = [] as Product[];
+    if (selectedProductsIndex > 0) {
+      newSelectedProducts = selectedProductsList.splice(
+        selectedProductsIndex,
+        1,
+      );
+    }
+
+    const productDb = await database
+      .get<Product>('products')
+      .find(productToArchive);
+
+    await database.action(async () => {
+      await productDb.update(item => {
+        item.available = !item.available;
+      });
+    });
+
+    handleArchiveModalVisibility('');
+
+    setSelectedProducts(
+      newSelectedProducts.length > 0
+        ? newSelectedProducts
+        : selectedProductsList,
+    );
+  }, [handleArchiveModalVisibility, productToArchive, selectedProducts]);
+
   const handleChange = useCallback(
     (e: NativeSyntheticEvent<TextInputChangeEventData>) => {
       const value = e.nativeEvent.text;
@@ -153,10 +330,14 @@ const AddProducts: React.FC<Props> = ({ route, navigation }) => {
     [newProductName],
   );
 
-  const handleModalVisibility = useCallback(() => {
+  const handleAddProductModalVisibility = useCallback(() => {
     setNewProductName('');
-    setShowModal(!showModal);
-  }, [showModal]);
+    setShowAddProductModal(!showAddProductModal);
+  }, [showAddProductModal]);
+
+  const handleFilterProducts = useCallback(() => {
+    setAllProducts(!allProducts);
+  }, [allProducts]);
 
   const handleCreateProduct = useCallback(async () => {
     const productsCollection = database.get<Product>('products');
@@ -174,6 +355,7 @@ const AddProducts: React.FC<Props> = ({ route, navigation }) => {
         id: newProduct.id,
         name: newProduct.name,
         isSelected: true,
+        available: newProduct.available,
       });
 
       setProducts(
@@ -183,8 +365,13 @@ const AddProducts: React.FC<Props> = ({ route, navigation }) => {
       );
     });
 
-    handleModalVisibility();
-  }, [handleModalVisibility, selectedProducts, products, newProductName]);
+    handleAddProductModalVisibility();
+  }, [
+    handleAddProductModalVisibility,
+    selectedProducts,
+    products,
+    newProductName,
+  ]);
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
@@ -194,88 +381,183 @@ const AddProducts: React.FC<Props> = ({ route, navigation }) => {
             title={route.params.listName}
             canGoBack={navigation.canGoBack()}
           />
-          <Modal animationType="fade" visible={showModal} transparent>
-            <ModalContainer>
-              <ModalContent>
-                <ProductNameInput>
-                  <Icon
-                    name="tag"
-                    color={theme.colors.primary}
-                    size={RFValue(24)}
-                  />
-                  <TextInput
-                    // ref={inputRef}
-                    value={newProductName}
-                    onChange={handleChange}
-                    placeholderTextColor={theme.colors.placeHolderText}
-                    placeholder="Product Name"
-                  />
-                </ProductNameInput>
-                <ModalButtonsContainer>
-                  <ModalButtonCancel onPress={handleModalVisibility}>
-                    <Text style={{ color: theme.colors.altText }}>CANCEL</Text>
-                  </ModalButtonCancel>
-                  {newProductName.length > 0 && (
-                    <ModalButtonConfirm onPress={handleCreateProduct}>
-                      <Text style={{ color: theme.colors.altText }}>
-                        CONFIRM
-                      </Text>
-                    </ModalButtonConfirm>
-                  )}
-                </ModalButtonsContainer>
-              </ModalContent>
-            </ModalContainer>
-          </Modal>
-          <Content>
-            <ContentHeader>
-              <Title>{selectedProducts.length} Products</Title>
-              <OutlinedButton
-                color={theme.colors.primary}
-                iconName="plus"
-                handlePress={handleModalVisibility}
-                text="Product"
-              />
-            </ContentHeader>
-            {/* <Search title='Abacaxi' marginTop={0} /> */}
-            <FlatList
-              data={products}
-              keyExtractor={item => item.id}
-              ListEmptyComponent={NoItems}
-              renderItem={({ item }) => (
-                <TouchableOpacity onPress={() => selectItem(item.id)}>
-                  <ItemContainer>
-                    <ItemTitle>{item.name}</ItemTitle>
-                    <Icon
-                      name={item.isSelected ? 'minus' : 'plus'}
-                      size={16}
+          {loading ? (
+            <View
+              style={{
+                justifyContent: 'center',
+                alignItems: 'center',
+                flex: 1,
+              }}
+            >
+              <ActivityIndicator color={theme.colors.primary} size="large" />
+            </View>
+          ) : (
+            <>
+              <Modal
+                animationType="fade"
+                visible={showAddProductModal}
+                transparent
+              >
+                <ModalContainer>
+                  <ModalContent>
+                    <ProductNameInput>
+                      <Icon
+                        name="tag"
+                        color={theme.colors.primary}
+                        size={RFValue(24)}
+                      />
+                      <TextInput
+                        // ref={inputRef}
+                        value={newProductName}
+                        onChange={handleChange}
+                        placeholderTextColor={theme.colors.placeHolderText}
+                        placeholder="Product Name"
+                      />
+                    </ProductNameInput>
+                    <ModalButtonsContainer>
+                      <ModalButtonCancel
+                        onPress={handleAddProductModalVisibility}
+                      >
+                        <Text style={{ color: theme.colors.altText }}>
+                          CANCEL
+                        </Text>
+                      </ModalButtonCancel>
+                      {newProductName.length > 0 && (
+                        <ModalButtonConfirm onPress={handleCreateProduct}>
+                          <Text style={{ color: theme.colors.altText }}>
+                            CONFIRM
+                          </Text>
+                        </ModalButtonConfirm>
+                      )}
+                    </ModalButtonsContainer>
+                  </ModalContent>
+                </ModalContainer>
+              </Modal>
+              <Modal
+                animationType="fade"
+                visible={showArchiveModal}
+                transparent
+              >
+                <ModalContainer>
+                  <ModalContent>
+                    <ModalTitle>{archiveModalText}</ModalTitle>
+                    <ModalButtonsContainer>
+                      <ModalButtonCancel
+                        onPress={() => handleArchiveModalVisibility('')}
+                      >
+                        <Text style={{ color: theme.colors.altText }}>
+                          CANCEL
+                        </Text>
+                      </ModalButtonCancel>
+                      <ModalButtonConfirm onPress={handleArchiveItem}>
+                        <Text style={{ color: theme.colors.altText }}>
+                          CONFIRM
+                        </Text>
+                      </ModalButtonConfirm>
+                    </ModalButtonsContainer>
+                  </ModalContent>
+                </ModalContainer>
+              </Modal>
+              <Content>
+                <ContentHeader>
+                  <Title>{selectedProducts.length} Products</Title>
+                  <View
+                    style={{
+                      flexDirection: 'row',
+                    }}
+                  >
+                    <OutlinedButton
                       color={theme.colors.text}
+                      iconName="filter"
+                      handlePress={handleFilterProducts}
+                      text={allProducts ? 'Available' : 'All'}
                     />
-                  </ItemContainer>
-                </TouchableOpacity>
-              )}
-              contentContainerStyle={
-                products.length === 0
-                  ? { flex: 1 }
-                  : { paddingBottom: RFValue(70) }
-              }
-            />
-            {selectedProducts.length > 0 && (
-              <FloatActionButton onPress={handleSave} disabled={saving}>
-                {saving ? (
-                  <ActivityIndicator
-                    color={theme.colors.altText}
-                    size="small"
-                  />
-                ) : (
-                  <Icon
-                    name="save"
-                    size={RFValue(20)}
-                    color={theme.colors.altText}
-                  />
+                    <OutlinedButton
+                      color={theme.colors.primary}
+                      iconName="plus"
+                      handlePress={handleAddProductModalVisibility}
+                      text="Product"
+                    />
+                  </View>
+                </ContentHeader>
+                <FlatList
+                  data={products}
+                  keyExtractor={item => item.id}
+                  ListEmptyComponent={NoItems}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      activeOpacity={item.available ? 0.5 : 1}
+                      onPress={() => {
+                        if (item.available) {
+                          selectItem(item.id);
+                        }
+                      }}
+                      onLongPress={() => {
+                        if (item.available) {
+                          setArchiveModalText(
+                            'Do you want to archive this product?',
+                          );
+                        } else {
+                          setArchiveModalText(
+                            'Do you want to unarchive this product?',
+                          );
+                        }
+                        handleArchiveModalVisibility(item.id);
+                      }}
+                    >
+                      <ItemContainer>
+                        <ItemTitle>{item.name}</ItemTitle>
+                        <View style={{ flexDirection: 'row' }}>
+                          {!item.available ? (
+                            <Icon
+                              name="archive"
+                              size={16}
+                              color={theme.colors.text}
+                            />
+                          ) : (
+                            <Icon
+                              name={item.isSelected ? 'minus' : 'plus'}
+                              size={16}
+                              color={theme.colors.text}
+                            />
+                          )}
+                          {!item.available && item.isSelected && (
+                            <Icon
+                              name="minus"
+                              size={16}
+                              color={theme.colors.text}
+                              style={{ marginLeft: RFValue(8) }}
+                            />
+                          )}
+                        </View>
+                      </ItemContainer>
+                    </TouchableOpacity>
+                  )}
+                  contentContainerStyle={
+                    products.length === 0
+                      ? { flex: 1 }
+                      : { paddingBottom: RFValue(70) }
+                  }
+                />
+                {selectedProducts.length > 0 && (
+                  <FloatActionButton onPress={handleSave} disabled={saving}>
+                    {saving ? (
+                      <ActivityIndicator
+                        color={theme.colors.altText}
+                        size="small"
+                      />
+                    ) : (
+                      <Icon
+                        name="save"
+                        size={RFValue(20)}
+                        color={theme.colors.altText}
+                      />
+                    )}
+                  </FloatActionButton>
                 )}
-              </FloatActionButton>
-            )}
-          </Content>
+              </Content>
+            </>
+          )}
         </View>
       </>
     </TouchableWithoutFeedback>

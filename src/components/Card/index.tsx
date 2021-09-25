@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { RFValue } from 'react-native-responsive-fontsize';
+import Icon from 'react-native-vector-icons/Feather';
 import theme from '../../global/theme';
 import formatCurrency from '../../utils/formatCurrency';
 
-import { Header, Title, Footer, Text } from './styles';
+import { Header, BadgeContainer, Title, Footer, Text } from './styles';
 
 const styles = StyleSheet.create({
   container: {
@@ -24,9 +25,7 @@ interface IProps {
   header: {
     fields: {
       title: string;
-    };
-    style?: {
-      fontSize?: number;
+      finished: boolean;
     };
   };
   footer?: {
@@ -49,6 +48,15 @@ const Card: React.FC<IProps> = ({ header, footer }) => {
     <View style={[styles.container, { height: RFValue(104) }]}>
       <Header>
         <Title>{title}</Title>
+        <BadgeContainer>
+          {header.fields.finished && (
+            <Icon
+              name="check-circle"
+              size={RFValue(14)}
+              color={theme.colors.sucess}
+            />
+          )}
+        </BadgeContainer>
       </Header>
       {footer && (
         <Footer>

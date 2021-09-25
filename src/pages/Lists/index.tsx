@@ -8,14 +8,22 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   RefreshControl,
-  StatusBar,
+  Text,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import { Q } from '@nozbe/watermelondb';
+
 import theme from '../../global/theme';
 
-import { FloatActionButton } from './styles';
+import {
+  FloatActionButton,
+  FiltersContainer,
+  FiltersButtonsContainer,
+  FilterButton,
+  FilterButtonText,
+} from './styles';
 
 import Header from '../../components/Header';
 import Card from '../../components/Card';
@@ -25,6 +33,7 @@ import ListSkeleton from './Components/Skeleton';
 import { StackParamList } from '../../routes';
 import database from '../../database';
 import List from '../../database/model/List';
+import { BUILD_VERSION } from '../Settings';
 
 const styles = StyleSheet.create({
   container: {
@@ -42,6 +51,15 @@ const styles = StyleSheet.create({
     color: '#000',
     fontSize: 25,
   },
+  buildText: {
+    color: theme.colors.text,
+    fontSize: 20,
+  },
+  BuildInfo: {
+    position: 'absolute',
+    left: 0,
+    bottom: 0,
+  },
 });
 
 type Props = StackScreenProps<StackParamList, 'Lists'>;
@@ -55,24 +73,39 @@ interface IList {
   quantity: number;
 }
 
+type FilterType = 'All' | 'Finished' | 'Shared' | 'Starred';
+
 const Lists: React.FC<Props> = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
-
-  const [lists, setLists] = useState([] as List[]);
+  const [lists, setLists] = useState<List[]>([]);
+  const [filter, setFilter] = useState<FilterType>();
 
   const loadingLists = useCallback(async () => {
     setLoading(true);
 
     const listsCollection = database.get<List>('lists');
-    const dbLists = await listsCollection.query().fetch();
+    let dbLists = [] as List[];
+    switch (filter) {
+      case 'All':
+        dbLists = await listsCollection.query().fetch();
+        break;
+      case 'Finished':
+        dbLists = await listsCollection.query(Q.where('done', true)).fetch();
+        break;
+      default:
+        dbLists = await listsCollection.query(Q.where('done', false)).fetch();
+        break;
+    }
 
-    setLists(dbLists);
+    setLists(dbLists.sort((a, b) => (a.done === b.done ? 0 : a.done ? 1 : -1)));
 
     setLoading(false);
-  }, []);
+  }, [filter]);
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('focus', () => loadingLists());
+
+    loadingLists();
 
     return unsubscribe;
   }, [loadingLists, navigation]);
@@ -99,15 +132,24 @@ const Lists: React.FC<Props> = ({ navigation }) => {
     [lists, navigation],
   );
 
+  const handleFilter = useCallback(
+    (selectedFilter: FilterType) => {
+      if (filter === selectedFilter) {
+        setFilter(undefined);
+        return;
+      }
+      setFilter(selectedFilter);
+    },
+    [filter],
+  );
+
   const renderItem = ({ item }: { item: IList }) => (
     <TouchableOpacity key={item.id} onPress={() => handlePress(item.id)}>
       <Card
         header={{
           fields: {
             title: item.name,
-          },
-          style: {
-            fontSize: 16,
+            finished: item.done,
           },
         }}
         footer={{
@@ -124,13 +166,75 @@ const Lists: React.FC<Props> = ({ navigation }) => {
     <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
       <>
         <View style={{ flex: 1 }}>
-          <Header
-            title="My Lists"
-            canGoBack={navigation.canGoBack()}
-            handleBack={() => navigation.goBack()}
-          />
+          <Header title="My Lists" canGoBack={navigation.canGoBack()} />
           <SafeAreaView style={styles.container}>
             <View style={styles.containerContent}>
+              <FiltersContainer>
+                <Icon
+                  name="filter"
+                  color={theme.colors.text}
+                  size={RFValue(16)}
+                />
+                <FiltersButtonsContainer>
+                  <FilterButton
+                    color={
+                      filter === 'All'
+                        ? theme.colors.primary
+                        : theme.colors.altPrimary
+                    }
+                    pressed={filter === 'All'}
+                    onPress={() => handleFilter('All')}
+                  >
+                    <Icon
+                      name="plus-circle"
+                      size={RFValue(16)}
+                      color={
+                        filter === 'All'
+                          ? theme.colors.altPrimary
+                          : theme.colors.primary
+                      }
+                    />
+                    <FilterButtonText
+                      color={
+                        filter === 'All'
+                          ? theme.colors.altPrimary
+                          : theme.colors.primary
+                      }
+                    >
+                      All
+                    </FilterButtonText>
+                  </FilterButton>
+                  {/** ********************************************* */}
+                  <FilterButton
+                    color={
+                      filter === 'Finished'
+                        ? theme.colors.sucess
+                        : theme.colors.altSuccess
+                    }
+                    pressed={filter === 'Finished'}
+                    onPress={() => handleFilter('Finished')}
+                  >
+                    <Icon
+                      name="check-circle"
+                      size={RFValue(16)}
+                      color={
+                        filter === 'Finished'
+                          ? theme.colors.altSuccess
+                          : theme.colors.sucess
+                      }
+                    />
+                    <FilterButtonText
+                      color={
+                        filter === 'Finished'
+                          ? theme.colors.altSuccess
+                          : theme.colors.sucess
+                      }
+                    >
+                      Finished
+                    </FilterButtonText>
+                  </FilterButton>
+                </FiltersButtonsContainer>
+              </FiltersContainer>
               {loading ? (
                 <ListSkeleton />
               ) : (
@@ -151,9 +255,12 @@ const Lists: React.FC<Props> = ({ navigation }) => {
               )}
             </View>
           </SafeAreaView>
-          <FloatActionButton onPress={handleCreate}>
+          <FloatActionButton onPress={handleCreate} style={{ elevation: 5 }}>
             <Icon name="plus" size={RFValue(20)} color={theme.colors.altText} />
           </FloatActionButton>
+        </View>
+        <View style={styles.BuildInfo}>
+          <Text style={styles.buildText}>{`Build ${BUILD_VERSION}`}</Text>
         </View>
       </>
     </TouchableWithoutFeedback>

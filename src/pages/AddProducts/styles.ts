@@ -1,4 +1,4 @@
-import styled from 'styled-components/native';
+import styled, { css } from 'styled-components/native';
 import { RFValue } from 'react-native-responsive-fontsize';
 import { getBottomSpace, isIphoneX } from 'react-native-iphone-x-helper';
 
@@ -13,6 +13,14 @@ export const ModalContent = styled.View`
   padding: ${RFValue(16)}px;
   border-radius: ${RFValue(8)}px;
   background-color: ${({ theme }) => theme.colors.background};
+`;
+export const ModalTitle = styled.Text`
+  margin-bottom: ${RFValue(12)}px;
+  margin-left: ${RFValue(12)}px;
+  margin-right: ${RFValue(12)}px;
+  font-size: ${RFValue(22)}px;
+  color: ${({ theme }) => theme.colors.text};
+  font-weight: 700;
 `;
 export const ProductNameInput = styled.View`
   flex-direction: row;

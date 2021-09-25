@@ -17,7 +17,7 @@ export const Container = styled.View<IContainerProps>`
   padding: ${RFValue(4)}px;
   padding-left: ${RFValue(8)}px;
   padding-right: ${RFValue(8)}px;
-  margin-left: ${RFValue(4)}px;
+  margin-left: ${RFValue(8)}px;
 `;
 
 interface ITextProps {

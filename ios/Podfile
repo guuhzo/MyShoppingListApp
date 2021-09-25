@@ -17,6 +17,8 @@ target 'MyShoppingListApp' do
 
   # pod 'simdjson', path: '../node_modules/@nozbe/simdjson'
 
+  pod 'react-native-splash-screen', :path => '../node_modules/react-native-splash-screen'
+
   target 'MyShoppingListAppTests' do
     inherit! :complete
     # Pods for testing

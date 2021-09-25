@@ -22,7 +22,9 @@ const OutlinedButton: React.FC<IProps> = ({
     <TouchableOpacity onPress={handlePress}>
       <Container borderColor={color}>
         {iconName && <Icon name={iconName} size={16} color={color} />}
-        <Text color={color}>{text}</Text>
+        <Text color={color} marginLeft={iconName ? 4 : 0}>
+          {text}
+        </Text>
       </Container>
     </TouchableOpacity>
   );

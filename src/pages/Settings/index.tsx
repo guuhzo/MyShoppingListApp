@@ -1,4 +1,4 @@
-import React, { useCallback, useState, useEffect } from 'react';
+import React, { useCallback, useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { StackScreenProps } from '@react-navigation/stack';
 
@@ -9,6 +9,8 @@ import database from '../../database';
 import List from '../../database/model/List';
 import Product from '../../database/model/Product';
 import ListItem from '../../database/model/ListItem';
+
+export const BUILD_VERSION = '0.3.0';
 
 const styles = StyleSheet.create({
   container: {
@@ -33,6 +35,15 @@ const styles = StyleSheet.create({
     color: theme.colors.text,
     fontSize: 25,
     textAlign: 'center',
+  },
+  buildText: {
+    color: theme.colors.text,
+    fontSize: 20,
+  },
+  BuildInfo: {
+    position: 'absolute',
+    left: 0,
+    bottom: 0,
   },
 });
 
@@ -64,21 +75,16 @@ const Settings: React.FC<Props> = ({ navigation }) => {
 
       for (const relation of relations) {
         await relation.destroyPermanently();
-        console.log('one relation removed');
       }
 
       for (const product of products) {
         await product.destroyPermanently();
-        console.log('one product removed');
       }
 
       for (const list of lists) {
         await list.destroyPermanently();
-        console.log('one list removed');
       }
     });
-
-    console.log('all items was removed');
 
     setShowCompletedText(true);
     setBDeleteText('Delete Data');
@@ -108,7 +114,7 @@ const Settings: React.FC<Props> = ({ navigation }) => {
               marginTop: -34,
             }}
           >
-            Process completed successfully
+            Done!!!
           </Text>
         )}
         <TouchableOpacity onPress={() => navigation.navigate('RealeaseNotes')}>
@@ -128,6 +134,9 @@ const Settings: React.FC<Props> = ({ navigation }) => {
             <Text style={styles.text}>{bDeleteText}</Text>
           </View>
         </TouchableOpacity>
+      </View>
+      <View style={styles.BuildInfo}>
+        <Text style={styles.buildText}>{`Build ${BUILD_VERSION}`}</Text>
       </View>
     </View>
   );
