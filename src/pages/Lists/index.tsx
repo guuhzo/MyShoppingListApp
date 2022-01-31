@@ -103,7 +103,9 @@ const Lists: React.FC<Props> = ({ navigation }) => {
   }, [filter]);
 
   useEffect(() => {
-    const unsubscribe = navigation.addListener('focus', () => loadingLists());
+    const unsubscribe = navigation.addListener('focus', () => {
+      loadingLists();
+    });
 
     loadingLists();
 
